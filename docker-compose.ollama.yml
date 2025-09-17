@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ${OLLAMA_MODELS_DIR:-${HOME}/.ollama}:/root/.ollama
+    restart: unless-stopped
+
+    # GPU (NVIDIA) – optional aktivieren, wenn der Host korrekt konfiguriert ist:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           capabilities: [gpu]
+    #           count: all
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - network1
+networks:
+  network1:
+    name: allezusammen
+    external: true
