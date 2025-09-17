@@ -12,3 +12,5 @@ wheels/
 memgraph-platform/
 neo4j_db/
 *.env
+.cache
+.nv
