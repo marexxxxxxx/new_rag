@@ -34,7 +34,7 @@ storage_context = Neo4jPropertyGraphStore(
 
 # Knowledge Graph Extractors
 kg_extractors = [
-    ImplicitPathExtractor(),
+    #ImplicitPathExtractor(), nur wichtig bei vielen Unterschiedlichen Dokumenten
     DynamicLLMPathExtractor(llm=LLM),
 ]
 from llama_index.vector_stores.neo4jvector import Neo4jVectorStore
