@@ -1,0 +1,6 @@
+llama_index
+llama-index-graph-stores-memgraph
+llama-index
+llama-index-core
+nest_asyncio
+llama_index.graph_stores.neo4j
