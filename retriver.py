@@ -26,4 +26,4 @@ sub_retriver = [VectorContextRetriever(
     path_depth=1
 )]
 retriever = PGRetriever(sub_retrievers=sub_retriver)
-nodes = retriever.retrieve("Wie macht man eine Google Suche")
+nodes = retriever.retrieve("Wie stehen Amazon und Meta zueinader")

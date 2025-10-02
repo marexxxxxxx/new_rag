@@ -9,7 +9,14 @@ import nest_asyncio
 nest_asyncio.apply()
 
 
-llm_model = Ollama(model="hf.co/unsloth/gpt-oss-20b-GGUF:Q8_0", request_timeout=460.0)
+import os
+# Aktiviere Unified Memory
+os.environ["CUDA_MANAGED_FORCE_DEVICE_ALLOC"] = "1"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
+#ollama run hf.co/unsloth/gpt-oss-20b-GGUF:Q8_0
+
+llm_model = Ollama(model="hf.co/unsloth/Qwen3-8B-GGUF:Q4_K_S", request_timeout=460.0)
 emebdder = Ollama(model="")
 doc = SimpleDirectoryReader("./data/").load_data()
 
@@ -30,7 +37,7 @@ def main():
     from llama_index.embeddings.huggingface import HuggingFaceEmbedding
     from llama_index.core.indices.property_graph import SchemaLLMPathExtractor, DynamicLLMPathExtractor
 
-    embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-m3")
+    embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-m3",embed_batch_size=1)
 
     index = PropertyGraphIndex.from_documents(
         doc,
