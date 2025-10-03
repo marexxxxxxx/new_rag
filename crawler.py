@@ -3,22 +3,24 @@ import json
 from crawl4ai import AsyncWebCrawler
 from crawl4ai import LLMConfig, LLMExtractionStrategy, CrawlerRunConfig, CacheMode, AsyncWebCrawler
 from schemah import info_schemah
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 llm_config = LLMConfig(
-    provider="ollama/unsloth/gpt-oss-20b-GGUF:Q8_0",
-    api_token="",  # lokal meist leer
-    base_url="http://localhost:11434/v1")
+    provider="ollama/gpt-oss:20b",
+)
 
 llm_extraction = LLMExtractionStrategy(
     llm_config=llm_config,
     schema=info_schemah.model_json_schema(),
-    instruction="Extract Objects based on the schemah provided.",
+    instruction="Extract the activitys based on the schemah provided.",
     input_format="markdown",
     extraction_type="schema",
 
 )
-
+a = open("test.txt", "w")
 
 async def main():
     crawl_config=CrawlerRunConfig(
@@ -28,8 +30,10 @@ async def main():
     async with AsyncWebCrawler() as crawler:
         result = await crawler.arun("https://www.getyourguide.de/fuerteventura-l419/?date_from=2025-10-02&date_to=2025-10-31",config=crawl_config)
     if result.success:
-        print(result)
+        print(result.extracted_content)
+        a.write(result.extracted_content)
     else:
         print(f"Error: \n {result.error_message}")
 
 asyncio.run(main())
+a.close()
