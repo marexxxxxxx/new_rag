@@ -7,5 +7,5 @@ class info_schemah(BaseModel):
     price: Annotated[float,"The price"]
     location: Annotated[str, "The Location of the Event"]
     description: Annotated[str,"Description of the event"]
-    link: Annotated[Union[str,None],"Add a link when provided, otherwise set it to None"]
+    link: Annotated[Union[str,None],"Extract the link that leads directly to the activity."]
     duration: Annotated[Union[list,None],"The Duration. If nothing is avaible: None"]
