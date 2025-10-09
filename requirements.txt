@@ -8,3 +8,5 @@ llama_index.graph_stores.neo4j
 #Langchain
 langgraph
 langchain-ollama
+
+crawl4ai[all]
