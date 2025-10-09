@@ -28,16 +28,16 @@ a = open("test.txt", "w")
 
 async def main():
     crawl_config=CrawlerRunConfig(
-        extraction_strategy=llm_extraction,
+        #extraction_strategy=llm_extraction,
         deep_crawl_strategy=BFSDeepCrawlStrategy(max_depth=0,include_external=False),
         cache_mode=CacheMode.BYPASS
     )
     async with AsyncWebCrawler() as crawler:
         result = await crawler.arun(os.environ["LINK"],config=crawl_config)
     if result[0].success:
-        print(result[0].markdown)
+        a.write(str(result[0].markdown))
         print(result[0].extracted_content)
-        a.write(str(result[0].extracted_content))
+
 
 
 asyncio.run(main())

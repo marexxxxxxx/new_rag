@@ -6,3 +6,5 @@ nest_asyncio
 llama_index.graph_stores.neo4j
 pydantic
 crawl4ai[all] #muss mit crawl4ai-setup installiert werden
+langgraph
+langchain-ollama
