@@ -4,3 +4,7 @@ llama-index
 llama-index-core
 nest_asyncio
 llama_index.graph_stores.neo4j
+
+#Langchain
+langgraph
+langchain-ollama
