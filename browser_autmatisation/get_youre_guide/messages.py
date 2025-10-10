@@ -1,9 +1,9 @@
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import MessagesPlaceholder
-from langchain_core.prompts.chat import ChatMessagePromptTemplate
+from langchain_core.prompts.chat import ChatPromptTemplate
 
-is_event_prompt = ChatMessagePromptTemplate(
-    "system","""
+is_event_prompt = ChatPromptTemplate.from_messages([
+    ("system","""
 Du bist ein Text analyst. Analysiere, ob der Text eine Event Info hat, und mindestens solche
 Merkmale besitzt wie:
 1.Titel
@@ -11,12 +11,12 @@ Merkmale besitzt wie:
 3.rating_count
 
 wenn es diese sachen erfüllt, so returnst du true, anderfalse false.
-""",
-MessagesPlaceholder(variable_name="text")
-)
+"""),
+("human", "{text}")
+])
 
 
-json_format_prompt=ChatMessagePromptTemplate(
+json_format_prompt=ChatPromptTemplate.from_messages([(
     "system",
     """
 You are an information extraction model. 
@@ -42,7 +42,8 @@ RULES:
 - Use "null" for missing optional values.
 - Use proper numeric types for floats and integers.
 - The keys and order must exactly match the schema above.
-    """,
-    MessagesPlaceholder(variable_name="text")
+    """),
+    ("human","{text}")
+    
 
-)
+])
