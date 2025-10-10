@@ -26,4 +26,3 @@ def json_format(state:state):
     return {"ergebnisse": ergb, "current_obj":""}
 
 
-    
