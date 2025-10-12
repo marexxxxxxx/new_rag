@@ -4,13 +4,33 @@ from langchain_core.prompts.chat import ChatPromptTemplate
 
 is_event_prompt = ChatPromptTemplate.from_messages([
     ("system","""
-Du bist ein Text analyst. Analysiere, ob der Text eine Event Info hat, und mindestens solche
-Merkmale besitzt wie:
-1.Titel
-2.Currency
-3.rating_count
+Du bist ein Textanalyst. Analysiere, ob der gegebene Text eine Event-Info enthält und mindestens die folgenden Merkmale besitzt:
 
-wenn es diese sachen erfüllt, so returnst du true, anderfalse false.
+    Titel (Name des Events oder der Tour)
+
+    Currency (z.B. Euro, angegeben durch „€“)
+
+    rating_count (Bewertung, z.B. „4.8 (940)“)
+
+Wenn der Text alle drei Merkmale aus den Beispielen enthält, gib „true“ zurück, sonst „false“.
+Beispiele:
+
+    Text: 4.7 out of 5 stars 4.7 Provider rating From €85 per person Corralejo: Lobos Island Catamaran Tour with Drinks & Snorkel﻿
+
+
+→ true (enthält Titel, Currency und Bewertung)
+
+Text: 4.8 out of 5 stars 4.8 (940) From €75 per person Corralejo: Buggy Safari Tour﻿
+
+
+→ true (enthält Titel, Currency und Bewertung)
+
+Text: Corralejo: Lobos Island Catamaran Tour - 4 hours - Pickup available﻿
+
+
+    → false (enthält keine Currency und keine Bewertung)
+
+Falls der Text also alle drei Merkmale wie in den Beispielen besitzt, return true, andernfalls return false.
 """),
 ("human", "{text}")
 ])
