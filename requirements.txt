@@ -10,3 +10,5 @@ langgraph
 langchain-ollama
 
 crawl4ai[all]
+
+fastmcp
