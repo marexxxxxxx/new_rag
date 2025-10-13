@@ -1,7 +1,8 @@
 from llm import json_format, event_checker
 from langgraph.graph import END, StateGraph
 from state import state
-
+from langchain_core.runnables.config import RunnableConfig
+config = RunnableConfig(recursion_limit=100)
 def check(state):
     if len(state["current_obj"]) >0:
         return 0
@@ -13,7 +14,6 @@ def schreibe_alles(state):
     with open("ergebnisse.txt", "w") as t:
         t.write(str(state["ergebnisse"]))
 graph = StateGraph(state)
-
 IS_EVENT= "is_event"
 JSON_FORMAT = "json_format"
 SCHREIBE = "schreibe"
@@ -34,6 +34,7 @@ from beispiel import test
 b = app.invoke({
     "counter": 0, 
     "current_obj": "", 
-    "ergebnisse": [], 
+    "ergebnisse": [[]], 
     "list_with_text": test
-})
+},{"recursion_limit":100})
+

@@ -27,5 +27,4 @@ class ActivityListing(BaseModel):
     price_unit: Annotated[str,"The unit for the price (e.g., 'group')."]
     duration_min_hours: Annotated[Optional[float],"Minimum duration in hours (e.g., 3.5)."] = None
     booking_callout: Annotated[Optional[str],"Special booking information (e.g., 'Booked 6 times yesterday')."] = None
-    activity_url: Annotated[Optional[str], "The direct URL to the activity listing."] = None
-    image_url: Annotated[Optional[str], "The URL to the activity image."] = None
+    url: Annotated[list[str], "The Urls to the activity and image"]
