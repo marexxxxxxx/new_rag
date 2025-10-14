@@ -27,8 +27,8 @@ def json_format(state:state):
     if state["ergebnisse"] == None:
         return {"ergebnisse": [response], "current_obj":""}
     else:
-        ergb = state["ergebnisse"][0]
-        ergb.append(response)
-        return {"ergebnisse": [ergb], "current_obj":""}
+        ergb = state["ergebnisse"]
+        ergb.insert(0,response.model_dump())
+        return {"ergebnisse": ergb, "current_obj":""}
 
 
