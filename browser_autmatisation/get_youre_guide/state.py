@@ -28,3 +28,11 @@ class ActivityListing(BaseModel):
     duration_min_hours: Annotated[Optional[float],"Minimum duration in hours (e.g., 3.5)."] = None
     booking_callout: Annotated[Optional[str],"Special booking information (e.g., 'Booked 6 times yesterday')."] = None
     url: Annotated[list[str], "The Urls to the activity and image"]
+
+class ActivityListing_advanced(BaseModel):
+    highlights: Annotated[list[str], "The Highlights textblock"]
+    full_description: Annotated[list[str], "The Full description textblock"]
+    includes: Annotated[list[str], "The Includes textblock"]
+    not_suitable_for: Annotated[list[str],"The not suitable textblock"]
+    pickup_details: Annotated[list[str], "The pickup details"]
+    important_information: Annotated[list[str], "The important infromation textblock"]

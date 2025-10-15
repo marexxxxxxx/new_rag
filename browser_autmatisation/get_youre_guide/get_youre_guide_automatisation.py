@@ -34,7 +34,7 @@ from beispiel import test
 b = app.invoke({
     "counter": 0, 
     "current_obj": "", 
-    "ergebnisse": [[]], 
+    "ergebnisse": [], 
     "list_with_text": test
 },{"recursion_limit":100})
 
