@@ -67,3 +67,43 @@ RULES:
     
 
 ])
+
+
+deep_analyst_prompt = ChatPromptTemplate.from_messages([
+    ("system","""
+Analysiere den folgenden Text auf folgende Stichwörter. Wenn du davon welche liest return True.
+     ##Highlights
+     ##Full description
+     ##Includes
+     ##Meeting point
+"""
+    ),
+    ("human", "{Text}")
+])
+
+deep_struter_prompt = ChatPromptTemplate.from_messages([
+    (
+    "system",
+    """
+You are an information extraction model. 
+Extract the relevant data from the text below and return it strictly as JSON that follows the exact schema.
+
+SCHEMA:
+{{
+  "highlights": array[string],
+  "full_description": array[string],
+  "includes": array[string],
+  "not_suitable_for": array[string],
+  "pickup_details": array[string],
+  "important_information": array[string]
+}}
+
+RULES:
+- Return ONLY valid JSON.
+- Do not include explanations, markdown, or extra fields.
+- Use an empty array "[]" for missing optional values.
+- The keys and order must exactly match the schema above.
+    """
+    ),
+    ("human", "{text}")
+])

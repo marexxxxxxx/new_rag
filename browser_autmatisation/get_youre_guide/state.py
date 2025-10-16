@@ -5,10 +5,15 @@ from beispiel import test
 
 class state(TypedDict):
     counter: Annotated[int, "Number of how many iterations"] 
-    current_obj: Annotated[str,"Object with the current event"] 
-    ergebnisse: Annotated[list, "Object with all of the events"] 
-    list_with_text: Annotated[list, "List with Objects to check"]
+    current_obj: Annotated[str,"Object with the current event."]
 
+    ergebnisse: Annotated[list, "Object with all of the events"] 
+    deep_ergebnisse: Annotated[list, "A more deeper version of the ergebnisse"]
+    list_with_text: Annotated[list, "List with Objects to check"]
+    link: Annotated[list[str], "The list with the links to check"]
+
+    list_obj: Annotated[list[str],"The Deeperversion of an element, just the plain text not organized."]
+    strucert_obj: Annotated[list, "The Deepversion of the events, with all informations, organized"]
 
 
 class isevent(BaseModel):
@@ -29,7 +34,16 @@ class ActivityListing(BaseModel):
     booking_callout: Annotated[Optional[str],"Special booking information (e.g., 'Booked 6 times yesterday')."] = None
     url: Annotated[list[str], "The Urls to the activity and image"]
 
-class ActivityListing_advanced(BaseModel):
+
+class Advanced(BaseModel):
+    highlights: Annotated[list[str], "The Highlights textblock"]
+    full_description: Annotated[list[str], "The Full description textblock"]
+    includes: Annotated[list[str], "The Includes textblock"]
+    not_suitable_for: Annotated[list[str],"The not suitable textblock"]
+    pickup_details: Annotated[list[str], "The pickup details"]
+    important_information: Annotated[list[str], "The important infromation textblock"]
+
+class ActivityListing_advanced(ActivityListing):
     highlights: Annotated[list[str], "The Highlights textblock"]
     full_description: Annotated[list[str], "The Full description textblock"]
     includes: Annotated[list[str], "The Includes textblock"]
