@@ -2,7 +2,7 @@ from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, Undetecte
 import asyncio
 from crawl4ai.async_crawler_strategy import AsyncPlaywrightCrawlerStrategy
 from time import sleep
-
+from state import state
 
 unde = UndetectedAdapter()
 
@@ -17,14 +17,32 @@ brows = AdaptiveConfig(
     min_gain_threshold=0.1
 )
 
+def splitting(eingang):
+    text = ""
+    sammlung = []
+    is_enter = 0
+    for i in eingang:
+        if i == "\n" and is_enter == 1:
+            sammlung.append(text)
+            is_enter = 0
+            text =""
+        if i == "\n":
+            is_enter = 1
+        if i != "\n":
+            is_enter = 0
+        text +=i
+    return sammlung
+
+with open("test.txt", "r") as t: 
+    splitting(t.read())
 
 crawl_strat = AsyncPlaywrightCrawlerStrategy(browser_adapter=unde,
                                              browser_config=browser_conf)
-def get_youre_data(link):
+def get_youre_data(state:state):
     async def get_youre_dat(link):
-        async with AsyncWebCrawler(config=brows) as crawl:
+        async with AsyncWebCrawler(config=browser_conf) as crawl:
             result = await crawl.arun(url=link)
-        return result
-    erg = asyncio.run(get_youre_dat(link))
-    return erg
+        return result.markdown
+    erg = asyncio.run(get_youre_dat(state["link"]))
+    return {"list_with_text": splitting(erg)}
 

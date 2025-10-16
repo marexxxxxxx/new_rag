@@ -9,7 +9,8 @@ class state(TypedDict):
 
     ergebnisse: Annotated[list, "Object with all of the events"] 
     deep_ergebnisse: Annotated[list, "A more deeper version of the ergebnisse"]
-    list_with_text: Annotated[list, "List with Objects to check"]
+    list_with_text: Annotated[list, "List with the text"]
+    list_with_check: Annotated[list, "Accpeted text"]
     link: Annotated[list[str], "The list with the links to check"]
 
     list_obj: Annotated[list[str],"The Deeperversion of an element, just the plain text not organized."]

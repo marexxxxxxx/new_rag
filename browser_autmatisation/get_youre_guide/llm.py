@@ -4,29 +4,11 @@ from langchain_core.prompts import MessagesPlaceholder
 from state import state, isevent, ActivityListing, ActivityListing_advanced, Advanced
 from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt
 from scraper import get_youre_data
+from scraper import splitting
 is_event_model = ChatOllama(model="qwen3:4b")
 json_format_model   = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0)
 
-def splitting(eingang):
-    text = ""
-    sammlung = []
-    is_enter = 0
-    for i in eingang:
-        if i == "\n" and is_enter == 1:
-            sammlung.append(text)
-            is_enter = 0
-            text =""
-        if i == "\n":
-            is_enter = 1
-        if i != "\n":
-            is_enter = 0
-        text +=i
-    for i in sammlung:
-        print(i)
-        print("\n \n \n")
 
-with open("test.txt", "r") as t: 
-    splitting(t.read())
 
 
 def event_checker(state: state):
@@ -48,9 +30,10 @@ def link_formater(erg: ActivityListing):
     elif links[1][:-3] == ".jpeg":
         better_links = [links[1], links[0]]
         erg.url = better_links
-    else:
-        Exception("Probelme bei dem Jpeg format.")
         return erg
+    else:
+        raise Exception("Probelme bei dem Jpeg format.")
+
 
 def json_format(state:state):
     obj = state["current_obj"]
@@ -64,10 +47,6 @@ def json_format(state:state):
         ergb.insert(0,response)
         return {"ergebnisse": ergb, "current_obj":""}
 
-def deeper_searcher(state:state):
-
-    None
-    
     
 
 def create_obj(state:state): #Das soll die Objecte also die den Markdown text zu den einzelnen activen erstellen
@@ -87,5 +66,5 @@ def create_obj(state:state): #Das soll die Objecte also die den Markdown text zu
             erg.append(i)
     structer = json_format_model.with_structured_output(Advanced)
     ergb = structer.invoke(deep_struter_prompt.invoke({"text": str(erg)}))
-    ende = ActivityListing_advanced{**obj.model_dump(),**ergb.model_dump()}
+    ende = ActivityListing_advanced(**obj.model_dump(),**ergb.model_dump())
     return {"ergebnisse": new_version, "structured_obj": ende}
