@@ -17,6 +17,17 @@ brows = AdaptiveConfig(
     min_gain_threshold=0.1
 )
 
+stealth_config = CrawlerRunConfig(
+    user_agent_mode="random",
+    simulate_user=True,
+    override_navigator=True,
+    magic=True,  # Auto-handle common bot detection patterns
+    excluded_tags=["script", "style", "nav", "footer"],
+    capture_network_requests=False,
+    capture_console_messages=False,
+)
+
+
 def splitting(eingang):
     text = ""
     sammlung = []
