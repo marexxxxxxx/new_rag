@@ -49,11 +49,13 @@ with open("test.txt", "r") as t:
 
 crawl_strat = AsyncPlaywrightCrawlerStrategy(browser_adapter=unde,
                                              browser_config=browser_conf)
-def get_youre_data(state:state):
+def get_youre_data(state:state, test):
+    if test == None:
+        test = state["link"]
     async def get_youre_dat(link):
         async with AsyncWebCrawler(config=browser_conf) as crawl:
             result = await crawl.arun(url=link)
         return result.markdown
-    erg = asyncio.run(get_youre_dat(state["link"]))
+    erg = asyncio.run(get_youre_dat(test))
     return {"list_with_text": splitting(erg)}
 

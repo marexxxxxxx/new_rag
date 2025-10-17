@@ -51,7 +51,6 @@ SCHEMA:
   "price_currency": string,
   "price_unit": string,
   "duration_min_hours": float | null,
-  "booking_callout": string | null,
   "activity_url": string | null,
   "image_url": string | null
 }}

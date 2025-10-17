@@ -5,16 +5,19 @@ from state import state, isevent, ActivityListing, ActivityListing_advanced, Adv
 from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt
 from scraper import get_youre_data
 from scraper import splitting
-is_event_model = ChatOllama(model="qwen3:4b")
-json_format_model   = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0)
+is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", options={'num_predict': 0})
+json_format_model   = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, options={'num_predict': 6000})
 
 
 
 
-def event_checker(state: state):
+def event_checker(state: state): #Findet herraus, was events sind, und was nicht.
     text_to_check=state["list_with_text"]
     struc = is_event_model.with_structured_output(isevent)
-    response = struc.invoke(is_event_prompt.invoke({"text": text_to_check[0]}))
+    try:
+        response = struc.invoke(is_event_prompt.invoke({"text": text_to_check[0]}))
+    except:
+        response = struc.invoke(is_event_prompt.invoke({"text": text_to_check[0]}))
     text_to_check.pop(0)
     if response.is_event == False:
         return {"list_with_text":text_to_check}
@@ -23,7 +26,7 @@ def event_checker(state: state):
             return {"list_with_text":text_to_check}        
         return {"list_with_text":text_to_check, "current_obj": text_to_check[0]}
 
-def link_formater(erg: ActivityListing):
+def link_formater(erg: ActivityListing): #verändert die postion des links sp, das der .jpeg link postion 0 ist
     links = erg.url
     if links[0][:-3] == ".jpeg":
         return erg
@@ -35,10 +38,13 @@ def link_formater(erg: ActivityListing):
         raise Exception("Probelme bei dem Jpeg format.")
 
 
-def json_format(state:state):
+def json_format(state:state): #erstellt das json format
     obj = state["current_obj"]
     struc = json_format_model.with_structured_output(ActivityListing)
-    response = struc.invoke(json_format_prompt.invoke({"text": [obj]}))
+    try:
+        response = struc.invoke(json_format_prompt.invoke({"text": [obj]}))
+    except:
+        response = struc.invoke(json_format_prompt.invoke({"text": [obj]}))
     if state["ergebnisse"] == None:
         return {"ergebnisse": [response], "current_obj":""}
     else:

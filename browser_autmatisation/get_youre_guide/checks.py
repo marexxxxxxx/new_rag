@@ -19,6 +19,7 @@ def schreibe_alles(state:state):
 
 def get_data_check(state:state):
     print("i")
+
     if state["link"] != []:
         return 0
     if state["link"] == []:

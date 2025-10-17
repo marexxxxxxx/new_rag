@@ -32,7 +32,7 @@ class ActivityListing(BaseModel):
     price_currency: Annotated[str, "The price currency (e.g., 'EUR')."]
     price_unit: Annotated[str,"The unit for the price (e.g., 'group')."]
     duration_min_hours: Annotated[Optional[float],"Minimum duration in hours (e.g., 3.5)."] = None
-    booking_callout: Annotated[Optional[str],"Special booking information (e.g., 'Booked 6 times yesterday')."] = None
+    #booking_callout: Annotated[Optional[str],"Special booking information (e.g., 'Booked 6 times yesterday')."] = None Führt immer zu massiven fehlern und warte zeiten
     url: Annotated[list[str], "The Urls to the activity and image"]
 
 
