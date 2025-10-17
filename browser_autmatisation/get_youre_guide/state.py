@@ -14,7 +14,7 @@ class state(TypedDict):
     link: Annotated[list[str], "The list with the links to check"]
 
     list_obj: Annotated[list[str],"The Deeperversion of an element, just the plain text not organized."]
-    strucert_obj: Annotated[list, "The Deepversion of the events, with all informations, organized"]
+    structured_obj: Annotated[list, "The Deepversion of the events, with all informations, organized"]
 
 
 class isevent(BaseModel):
@@ -43,6 +43,7 @@ class Advanced(BaseModel):
     not_suitable_for: Annotated[list[str],"The not suitable textblock"]
     pickup_details: Annotated[list[str], "The pickup details"]
     important_information: Annotated[list[str], "The important infromation textblock"]
+    coordinates: Annotated[list[float], "The coordiantes of the activity"]
 
 class ActivityListing_advanced(ActivityListing):
     highlights: Annotated[list[str], "The Highlights textblock"]
@@ -51,3 +52,4 @@ class ActivityListing_advanced(ActivityListing):
     not_suitable_for: Annotated[list[str],"The not suitable textblock"]
     pickup_details: Annotated[list[str], "The pickup details"]
     important_information: Annotated[list[str], "The important infromation textblock"]
+    coordinates: Annotated[list[float], "The coordiantes of the activity"]

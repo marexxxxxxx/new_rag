@@ -28,9 +28,9 @@ def event_checker(state: state): #Findet herraus, was events sind, und was nicht
 
 def link_formater(erg: ActivityListing): #verändert die postion des links sp, das der .jpeg link postion 0 ist
     links = erg.url
-    if links[0][:-3] == ".jpeg":
+    if links[0][-6:-1] == ".jpeg":
         return erg
-    elif links[1][:-3] == ".jpeg":
+    elif links[0][-6:-1] == ".jpeg":
         better_links = [links[1], links[0]]
         erg.url = better_links
         return erg
@@ -60,17 +60,20 @@ def create_obj(state:state): #Das soll die Objecte also die den Markdown text zu
     obj = state["ergebnisse"][0]
     new_version.pop(0)
     link = obj.url[0]
-    if link[:-3] == ".jpeg":
-        raise Exception("jpeg format nicht vorhanden")
-    markdown = get_youre_data(link)
+    state["link"] = link
+    if link[0][-6:-1] == ".jpeg":
+        raise Exception("Falsches Format")
+    markdown = get_youre_data(state)
     result = splitting(markdown)
     is_event_mode = is_event_model.with_structured_output(isevent)
     erg = []
-    for i in result:
+    for i in result: #warum ist result ohne details? das ist das problem
         test = is_event_model.invoke(deep_analyst_prompt.invoke({"text": i}))
         if test == True:
             erg.append(i)
     structer = json_format_model.with_structured_output(Advanced)
     ergb = structer.invoke(deep_struter_prompt.invoke({"text": str(erg)}))
     ende = ActivityListing_advanced(**obj.model_dump(),**ergb.model_dump())
-    return {"ergebnisse": new_version, "structured_obj": ende}
+    davor_und_jetzt = state["structured_obj"]
+    davor_und_jetzt.append(ende)
+    return {"ergebnisse": new_version, "structured_obj": davor_und_jetzt}

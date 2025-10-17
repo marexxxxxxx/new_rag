@@ -34,6 +34,8 @@ b = app.invoke({
     "counter": 0, 
     "current_obj": "", 
     "ergebnisse": [], 
-    "list_with_text": ""
+    "list_with_text": "",
+    "test": "",
+    "structured_obj": []
 },{"recursion_limit":10000000})
 

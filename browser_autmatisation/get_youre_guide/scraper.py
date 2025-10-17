@@ -22,7 +22,7 @@ stealth_config = CrawlerRunConfig(
     simulate_user=True,
     override_navigator=True,
     magic=True,  # Auto-handle common bot detection patterns
-    excluded_tags=["script", "style", "nav", "footer"],
+    excluded_tags=["script", "style", "nav", "footer", "header"],
     capture_network_requests=False,
     capture_console_messages=False,
 )
@@ -49,13 +49,11 @@ with open("test.txt", "r") as t:
 
 crawl_strat = AsyncPlaywrightCrawlerStrategy(browser_adapter=unde,
                                              browser_config=browser_conf)
-def get_youre_data(state:state, test):
-    if test == None:
-        test = state["link"]
+def get_youre_data(state:state):
     async def get_youre_dat(link):
         async with AsyncWebCrawler(config=browser_conf) as crawl:
             result = await crawl.arun(url=link)
         return result.markdown
-    erg = asyncio.run(get_youre_dat(test))
+    erg = asyncio.run(get_youre_dat(state["link"]))
     return {"list_with_text": splitting(erg)}
 

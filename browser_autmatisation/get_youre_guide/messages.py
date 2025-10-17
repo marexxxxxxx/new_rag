@@ -95,6 +95,7 @@ SCHEMA:
   "not_suitable_for": array[string],
   "pickup_details": array[string],
   "important_information": array[string]
+  "coordinates": array[float]
 }}
 
 RULES:
