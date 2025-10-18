@@ -2,7 +2,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.prompts.chat import ChatPromptTemplate
 
-is_event_prompt = ChatPromptTemplate.from_messages([
+is_event_prompt = ChatPromptTemplate.from_messages([ #muss noch angepasst werden, sodass es wirklich nur richtige elemente übernimmt.
     ("system","""
 Du bist ein Textanalyst. Analysiere, ob der gegebene Text eine Event-Info enthält und mindestens die folgenden Merkmale besitzt:
 
@@ -31,6 +31,7 @@ Text: Corralejo: Lobos Island Catamaran Tour - 4 hours - Pickup available﻿
     → false (enthält keine Currency und keine Bewertung)
 
 Falls der Text also alle drei Merkmale wie in den Beispielen besitzt, return true, andernfalls return false.
+
 """),
 ("human", "{text}")
 ])

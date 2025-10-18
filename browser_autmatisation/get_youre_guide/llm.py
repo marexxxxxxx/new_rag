@@ -64,7 +64,7 @@ def create_obj(state:state): #Das soll die Objecte also die den Markdown text zu
     if link[0][-6:-1] == ".jpeg":
         raise Exception("Falsches Format")
     markdown = get_youre_data(state)
-    result = splitting(markdown)
+    result = splitting(state["list_with_text"])
     is_event_mode = is_event_model.with_structured_output(isevent)
     erg = []
     for i in result: #warum ist result ohne details? das ist das problem
