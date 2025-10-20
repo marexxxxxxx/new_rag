@@ -1,0 +1,6 @@
+
+ 
+ 
+ 
+ 
+ title='Fuerteventura Jandia Natural Park - The Puertito Buggy Tour' rating_average=4.3 rating_count=1741 price_value=140.0 price_currency='€' price_unit='per group up to 2' duration_min_hours=None url=['https://www.getyourguide.com/fuerteventura-l419/fuerteventura-jandia-natural-park-the-puertito-buggy-tour-t404062/', 'https://cdn.getyourguide.com/image/format=auto,fit=crop,gravity=auto,quality=60,width=270,height=180/tour_img/7b3a91e22da578e6cc8254389d7eb6ab800f1a137141ceb87b436ae66f36851e.jpg', 'https://www.getyourguide.com/fuerteventura-l419/fuerteventura-jandia-natural-park-the-puertito-buggy-tour-t404062/']

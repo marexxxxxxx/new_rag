@@ -19,6 +19,8 @@ class state(TypedDict):
 
 class isevent(BaseModel):
     is_event: Annotated[bool,"Is the given text a event"]
+class has_more_info(BaseModel):
+    has_more: Annotated[bool,"Has more infos."]
 
 class ActivityListing(BaseModel):
     """
@@ -37,13 +39,13 @@ class ActivityListing(BaseModel):
 
 
 class Advanced(BaseModel):
-    highlights: Annotated[list[str], "The Highlights textblock"]
-    full_description: Annotated[list[str], "The Full description textblock"]
-    includes: Annotated[list[str], "The Includes textblock"]
-    not_suitable_for: Annotated[list[str],"The not suitable textblock"]
-    pickup_details: Annotated[list[str], "The pickup details"]
-    important_information: Annotated[list[str], "The important infromation textblock"]
-    coordinates: Annotated[list[float], "The coordiantes of the activity"]
+    highlights: Annotated[Union[None,list[str]], "The Highlights textblock"]
+    full_description: Annotated[Union[None,list[str]], "The Full description textblock"]
+    includes: Annotated[Union[None,list[str]], "The Includes textblock"]
+    not_suitable_for: Annotated[Union[None,list[str]],"The not suitable textblock"]
+    pickup_details: Annotated[Union[None,list[str]], "The pickup details"]
+    important_information: Annotated[Union[None,list[str]], "The important infromation textblock"]
+    coordinates: Annotated[Union[None,list[float]], "The coordiantes of the activity"]
 
 class ActivityListing_advanced(ActivityListing):
     highlights: Annotated[list[str], "The Highlights textblock"]

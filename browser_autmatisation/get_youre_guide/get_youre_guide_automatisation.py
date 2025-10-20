@@ -30,7 +30,7 @@ app = graph.compile()
 from beispiel import test
 
 b = app.invoke({
-    "link": "https://www.getyourguide.com/fuerteventura-l419/?visitor-id=O2OI7TZBBKSTJJMD6F8HDKUA11YE7AX4&locale_autoredirect_optout=true",
+    "link": "https://www.getyourguide.com/fuerteventura-l419/",
     "counter": 0, 
     "current_obj": "", 
     "ergebnisse": [], 

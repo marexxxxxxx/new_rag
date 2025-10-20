@@ -8,7 +8,7 @@ unde = UndetectedAdapter()
 
 browser_conf = BrowserConfig(
     enable_stealth=True,
-    headless=True
+    headless=False
 )
 brows = AdaptiveConfig(
     confidence_threshold=0.7,
@@ -50,10 +50,18 @@ with open("test.txt", "r") as t:
 crawl_strat = AsyncPlaywrightCrawlerStrategy(browser_adapter=unde,
                                              browser_config=browser_conf)
 def get_youre_data(state:state):
-    async def get_youre_dat(link):
-        async with AsyncWebCrawler(config=browser_conf) as crawl:
-            result = await crawl.arun(url=link)
-        return result.markdown
-    erg = asyncio.run(get_youre_dat(state["link"]))
-    return {"list_with_text": splitting(erg)}
+    try:
+        async def get_youre_dat(link):
+            async with AsyncWebCrawler(config=browser_conf) as crawl:
+                result = await crawl.arun(url=link)
+            return result.markdown
+        erg = asyncio.run(get_youre_dat(state["link"]))
+        erg = splitting(erg)
+        erg = [s.replace('\n', '') for s in erg if s.strip('\n')]
+        not_allowed = ["become a supplier", "* Places to see  *", "Company  *", "Work With Us  *"]
+        allowd = [word for word in erg
+                if not any(verbot.lower() in word.lower() for verbot in not_allowed)]
+        return {"list_with_text": allowd}
+    except:
+        return {"list_with_text": "Das ist kein ergebnis sondern nur ein Lücken fülkller \n \n kein ergebnis "}
 

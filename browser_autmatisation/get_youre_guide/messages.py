@@ -71,39 +71,78 @@ RULES:
 
 deep_analyst_prompt = ChatPromptTemplate.from_messages([
     ("system","""
-Analysiere den folgenden Text auf folgende Stichwörter. Wenn du davon welche liest return True.
-     ##Highlights
-     ##Full description
-     ##Includes
-     ##Meeting point
+
+You are a high-precision validation engine. Your task is to analyze the input text and decide if it contains **at least one piece of genuine, relevant information** that meaningfully fits the defined schema definitions.
+
+Your output must be **ONLY** `true` or `false`.
+
+**SCHEMA DEFINITIONS (What to look for):**
+* `highlights`: Genuine selling points (e.g., "See dolphins", "Volcano view").
+* `full_description`: A detailed narrative description of the activity.
+* `includes`: Specific services included in the price (e.g., "Lunch", "Snorkeling gear").
+* `not_suitable_for`: Specific groups of people or health restrictions (e.g., "Pregnant women", "Children under 5").
+* `pickup_details`: Specific pickup locations or meeting points.
+* `important_information`: Critical "What to bring" info (e.g., "Bring passport").
+* `coordinates`: Valid numerical latitudes/longitudes.
+
+**STRICT REJECTION RULES (Junk Filter):**
+You MUST output `false` if the text **EXCLUSIVELY** contains one or more of the following:
+1.  **Generic Footer/Meta-Text:** "Privacy Policy", "Legal Notice", "Sitemap", "Contact", App Store Links, "General Terms and Conditions".
+2.  **Generic Booking or Marketing Phrases:** "Free cancellation", "Reserve now & pay later", "Likely to sell out".
+3.  **Irrelevant or Miscategorized Content:** SEO links, titles of OTHER tours, generic filler text (e.g., "Sunset at the sea" on a cheese tour), review quotes ("Laura was on time").
+4.  **Invalid Data:** Coordinates like `inf`, `270.0`, or non-numeric values.
+5.  **Page Structure Elements:** "Filters", "Search results", "How GetYourGuide ranks activities".
+
+**Your Task:**
+Read the text. Does it contain **at least one** piece of information that matches the **SCHEMA DEFINITIONS** and is *NOT* just content from the **REJECTION RULES**?
+
+Say `true` if yes.
+Say `false` if no (i.e., the text is exclusively junk/meta-text/irrelevant).
+
+     
 """
     ),
-    ("human", "{Text}")
+    ("human", "{text}")
 ])
 
 deep_struter_prompt = ChatPromptTemplate.from_messages([
     (
     "system",
     """
-You are an information extraction model. 
-Extract the relevant data from the text below and return it strictly as JSON that follows the exact schema.
 
-SCHEMA:
+You are a high-precision information extraction model.
+Extract the relevant data from the text below and return it strictly as JSON that follows the exact schema and semantic rules.
+
+**SCHEMA AND SEMANTIC RULES:**
+
 {{
   "highlights": array[string],
+  // DEFINITION: Extract only genuine selling points or unique features that describe this specific activity (e.g., "Volcano view", "Swim with dolphins").
+
   "full_description": array[string],
+  // DEFINITION: Extract only detailed, narrative descriptions of what happens during the activity.
+
   "includes": array[string],
+  // DEFINITION: Extract only specific services or items included in the price (e.g., "Lunch", "Snorkeling gear", "Entrance fees").
+
   "not_suitable_for": array[string],
+  // DEFINITION: Extract only specific groups of people or health restrictions for whom the activity is unsuitable (e.g., "Pregnant women", "Children under 7", "People with back problems").
+
   "pickup_details": array[string],
-  "important_information": array[string]
+  // DEFINITION: Extract only specific information about pickup locations, meeting points, or pickup logic.
+
+  "important_information": array[string],
+  // DEFINITION: Extract only critical information the customer must know before booking (e.g., "What to bring: Passport", "Don't forget sunscreen", "Valid driver's license required").
+
   "coordinates": array[float]
+  // DEFINITION: Extract only valid numerical latitudes (in the range -90 to 90) and longitudes (in the range -180 to 180).
 }}
 
-RULES:
-- Return ONLY valid JSON.
-- Do not include explanations, markdown, or extra fields.
-- Use an empty array "[]" for missing optional values.
-- The keys and order must exactly match the schema above.
+**OUTPUT RULES:**
+1.  **JSON Only:** Return ONLY valid JSON.
+2.  **No Explanations:** Do not include explanations, markdown, or extra fields.
+3.  **Schema Adherence:** The keys and order must exactly match the schema above.
+4.  **Strict Definition:** Extract ONLY information that exactly matches the field DEFINITION above.
     """
     ),
     ("human", "{text}")
