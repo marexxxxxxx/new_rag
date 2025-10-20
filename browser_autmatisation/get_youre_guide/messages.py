@@ -147,3 +147,12 @@ Extract the relevant data from the text below and return it strictly as JSON tha
     ),
     ("human", "{text}")
 ])
+
+
+deep_extracter = ChatPromptTemplate.from_messages([
+    ("system", """
+You should extract the {Titel}
+"""),
+("human","{Text}")
+])
+

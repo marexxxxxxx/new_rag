@@ -3,12 +3,13 @@ import asyncio
 from crawl4ai.async_crawler_strategy import AsyncPlaywrightCrawlerStrategy
 from time import sleep
 from state import state
+import re
 
 unde = UndetectedAdapter()
 
 browser_conf = BrowserConfig(
     enable_stealth=True,
-    headless=False
+    headless=True
 )
 brows = AdaptiveConfig(
     confidence_threshold=0.7,
@@ -28,40 +29,26 @@ stealth_config = CrawlerRunConfig(
 )
 
 
-def splitting(eingang):
-    text = ""
-    sammlung = []
-    is_enter = 0
-    for i in eingang:
-        if i == "\n" and is_enter == 1:
-            sammlung.append(text)
-            is_enter = 0
-            text =""
-        if i == "\n":
-            is_enter = 1
-        if i != "\n":
-            is_enter = 0
-        text +=i
+def splitting_events(state: state):
+    sammlung = re.split(r'\[ !', state["list_with_text"])
     return sammlung
 
-with open("test.txt", "r") as t: 
-    splitting(t.read())
+def splitt_and_cut(state: state):
+    extracted_regex = re.findall(r"^(## .*?)(?=\n^##|\Z)", state["text"], re.MULTILINE | re.DOTALL)
+
+
 
 crawl_strat = AsyncPlaywrightCrawlerStrategy(browser_adapter=unde,
                                              browser_config=browser_conf)
 def get_youre_data(state:state):
-    try:
-        async def get_youre_dat(link):
-            async with AsyncWebCrawler(config=browser_conf) as crawl:
-                result = await crawl.arun(url=link)
-            return result.markdown
-        erg = asyncio.run(get_youre_dat(state["link"]))
-        erg = splitting(erg)
-        erg = [s.replace('\n', '') for s in erg if s.strip('\n')]
-        not_allowed = ["become a supplier", "* Places to see  *", "Company  *", "Work With Us  *"]
-        allowd = [word for word in erg
-                if not any(verbot.lower() in word.lower() for verbot in not_allowed)]
-        return {"list_with_text": allowd}
-    except:
-        return {"list_with_text": "Das ist kein ergebnis sondern nur ein Lücken fülkller \n \n kein ergebnis "}
 
+    async def get_youre_dat(link):
+        async with AsyncWebCrawler(config=browser_conf) as crawl:
+            result = await crawl.arun(url=link)
+        return result.markdown
+    erg = asyncio.run(get_youre_dat(state["link"]))
+    erg = [s.replace('\n', '') for s in erg if s.strip('\n')]
+    not_allowed = ["become a supplier", "* Places to see  *", "Company  *", "Work With Us  *"]
+    allowd = [word for word in erg
+            if not any(verbot.lower() in word.lower() for verbot in not_allowed)]
+    return {"list_with_text": allowd}

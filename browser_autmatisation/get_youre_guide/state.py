@@ -4,10 +4,9 @@ from langgraph.graph import StateGraph
 from beispiel import test
 
 class state(TypedDict):
-    counter: Annotated[int, "Number of how many iterations"] 
     current_obj: Annotated[str,"Object with the current event."]
 
-    ergebnisse: Annotated[list, "Object with all of the events"] 
+    ergebnisse: Annotated[list, "Object with all of the events"] # D
     deep_ergebnisse: Annotated[list, "A more deeper version of the ergebnisse"]
     list_with_text: Annotated[list, "List with the text"]
     list_with_check: Annotated[list, "Accpeted text"]
@@ -15,6 +14,7 @@ class state(TypedDict):
 
     list_obj: Annotated[list[str],"The Deeperversion of an element, just the plain text not organized."]
     structured_obj: Annotated[list, "The Deepversion of the events, with all informations, organized"]
+
 
 
 class isevent(BaseModel):
@@ -34,7 +34,6 @@ class ActivityListing(BaseModel):
     price_currency: Annotated[str, "The price currency (e.g., 'EUR')."]
     price_unit: Annotated[str,"The unit for the price (e.g., 'group')."]
     duration_min_hours: Annotated[Optional[float],"Minimum duration in hours (e.g., 3.5)."] = None
-    #booking_callout: Annotated[Optional[str],"Special booking information (e.g., 'Booked 6 times yesterday')."] = None Führt immer zu massiven fehlern und warte zeiten
     url: Annotated[list[str], "The Urls to the activity and image"]
 
 
@@ -55,3 +54,20 @@ class ActivityListing_advanced(ActivityListing):
     pickup_details: Annotated[list[str], "The pickup details"]
     important_information: Annotated[list[str], "The important infromation textblock"]
     coordinates: Annotated[list[float], "The coordiantes of the activity"]
+
+
+
+class highlights(BaseModel):
+    highlights: Annotated[list[str], "A list of the Highlights"]
+
+class meeting_point(BaseModel):
+    meeting_point: Annotated[list, "The meeting point where the people have to come"]
+
+class full_description(BaseModel):
+    full_description: Annotated[str, "The whole description"]
+
+class includes(BaseModel):
+    what_to_bring: Annotated[list, "Things you should bring with, or would be great"]
+    not_good: Annotated[list, "Things that are not allowd or not suitiblie things"]
+    know_bevor_go: Annotated[list, "Things that do not fit in the other categories"]
+    

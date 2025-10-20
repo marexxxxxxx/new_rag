@@ -4,9 +4,11 @@ from langchain_core.prompts import MessagesPlaceholder
 from state import state, isevent, ActivityListing, ActivityListing_advanced, Advanced, has_more_info
 from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt
 from scraper import get_youre_data
-from scraper import splitting
+from scraper import splitting_events
 is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000)
 json_format_model   = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, num_predict=1500)
+
+
 
 
 
@@ -30,7 +32,7 @@ def event_checker(state: state): #Findet herraus, was events sind, und was nicht
     elif response.is_event == True:
         if text_to_check == []:
             return {"list_with_text":text_to_check}        
-        return {"list_with_text":text_to_check, "current_obj": current_obj}
+        return {"list_with_text":text_to_check, "current_obj": current_obj} #muss angepasst werden, current_obj wird fallen gelassen, hier wird listenartig
 
 def link_formater(erg: ActivityListing): #verändert die postion des links sp, das der .jpeg link postion 0 ist
     links = erg.url
@@ -76,11 +78,11 @@ def create_obj(state:state): #Das soll die Objecte also die den Markdown text zu
     markdown = get_youre_data(state)
     is_event_mode = is_event_model.with_structured_output(has_more_info)
     erg = []
-    for i in markdown["list_with_text"]: #warum ist result ohne details? das ist das problem
+    for i in markdown["list_with_text"]: 
         test: has_more_info = is_event_mode.invoke(deep_analyst_prompt.invoke({"text": i}))
         if test.has_more == True:
             erg.append(i)
-    structer = json_format_model.with_structured_output(Advanced)
+    structer = is_event_model.with_structured_output(Advanced)
     for _ in range(2):
         try: 
             ergb = structer.invoke(deep_struter_prompt.invoke({"text": str(erg)}))
@@ -103,3 +105,24 @@ def create_obj(state:state): #Das soll die Objecte also die den Markdown text zu
     davor_und_jetzt.append(ende)
     return {"ergebnisse": new_version, "structured_obj": davor_und_jetzt}
 
+def formater(state:state):
+    erg = state["list_with_text"]
+    erg = splitting_events(erg)
+    return {"list_with_text": erg}
+
+
+
+def extracter_for_deep_analyst(titel):
+    
+    special = json_format_model
+
+action_map = {
+
+    "## Highlights": lambda m, t: extracter_for_deep_analyst(messagePropmtTemplate=m, titel=t),
+    "## Meeting point": lambda m, t: extracter_for_deep_analyst(messagePropmtTemplate=m, titel=t),
+    "## Full description": lambda m, t: extracter_for_deep_analyst(messagePropmtTemplate=m, titel=t),
+    "## Includes": lambda m, t: extracter_for_deep_analyst(messagePropmtTemplate=m, titel=t)
+}
+
+def deep_analyst(state:state):
+    None
