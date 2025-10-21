@@ -14,7 +14,7 @@ def check(state:state):
 
 def schreibe_alles(state:state):
     with open("ergebnisse.txt", "w") as t:
-        t.write(str(state["structured_obj"]))
+        t.write(str(state["result_list"]))
         
 
 

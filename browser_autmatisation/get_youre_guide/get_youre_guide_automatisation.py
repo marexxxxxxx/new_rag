@@ -33,13 +33,13 @@ graph.add_node(DEEP_ANALYST, deep_analyst)
 
 graph.set_entry_point(GET_YOURE_DATA)
 graph.add_edge(GET_YOURE_DATA, FIST_FORMATER)
-
 graph.add_conditional_edges(FIST_FORMATER,get_data_check, {0: IS_EVENT, 1: GET_YOURE_DATA})
-graph.add_conditional_edges(IS_EVENT, check, {0:JSON_FORMAT,1:IS_EVENT,2: GO_DEEPER}) #go_deeper wird nicht mehr exestieren
+graph.add_conditional_edges(IS_EVENT, check, {0:JSON_FORMAT,1:IS_EVENT,2: GET_DEEP_LINK}) #go_deeper wird nicht mehr exestieren
 
-#muss neu überarbeitet werden.
-graph.add_conditional_edges(GO_DEEPER, go_deeper_check, {0:GO_DEEPER, 1: SCHREIBE})
-graph.add_edge(JSON_FORMAT, IS_EVENT)
+graph.add_edge(GET_DEEP_LINK, GET_YOURE_DATA)
+graph.add_edge(GET_YOURE_DATA,DEEP_ANALYST)
+graph.add_conditional_edges(DEEP_ANALYST, go_deeper_check, {0: GET_DEEP_LINK, 1: SCHREIBE})
+
 
 app = graph.compile()
 from beispiel import test
