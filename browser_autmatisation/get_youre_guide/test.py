@@ -331,7 +331,7 @@ action_map = {
     # "## Includes": default_action,
 }
 
-for text in testa:
-    for key in keywords:
-        if key in text:
-            action_map[key]()
+from state import highlights
+from pydantic import BaseModel
+
+print(highlights.model_json_schema())

@@ -37,23 +37,7 @@ class ActivityListing(BaseModel):
     url: Annotated[list[str], "The Urls to the activity and image"]
 
 
-class Advanced(BaseModel):
-    highlights: Annotated[Union[None,list[str]], "The Highlights textblock"]
-    full_description: Annotated[Union[None,list[str]], "The Full description textblock"]
-    includes: Annotated[Union[None,list[str]], "The Includes textblock"]
-    not_suitable_for: Annotated[Union[None,list[str]],"The not suitable textblock"]
-    pickup_details: Annotated[Union[None,list[str]], "The pickup details"]
-    important_information: Annotated[Union[None,list[str]], "The important infromation textblock"]
-    coordinates: Annotated[Union[None,list[float]], "The coordiantes of the activity"]
 
-class ActivityListing_advanced(ActivityListing):
-    highlights: Annotated[list[str], "The Highlights textblock"]
-    full_description: Annotated[list[str], "The Full description textblock"]
-    includes: Annotated[list[str], "The Includes textblock"]
-    not_suitable_for: Annotated[list[str],"The not suitable textblock"]
-    pickup_details: Annotated[list[str], "The pickup details"]
-    important_information: Annotated[list[str], "The important infromation textblock"]
-    coordinates: Annotated[list[float], "The coordiantes of the activity"]
 
 
 
@@ -71,3 +55,12 @@ class includes(BaseModel):
     not_good: Annotated[list, "Things that are not allowd or not suitiblie things"]
     know_bevor_go: Annotated[list, "Things that do not fit in the other categories"]
     
+
+class Advanced(BaseModel):
+    highlights: highlights
+    full_description: full_description
+    includes: includes
+    meeting_point: meeting_point
+
+class ActivityListing_advanced(ActivityListing):
+    Advanced

@@ -29,8 +29,8 @@ stealth_config = CrawlerRunConfig(
 )
 
 
-def splitting_events(state: state):
-    sammlung = re.split(r'\[ !', state["list_with_text"])
+def splitting_events(erg):
+    sammlung = re.split(r'\[ !', erg)
     return sammlung
 
 def splitt_and_cut(state: state):
@@ -47,8 +47,6 @@ def get_youre_data(state:state):
             result = await crawl.arun(url=link)
         return result.markdown
     erg = asyncio.run(get_youre_dat(state["link"]))
-    erg = [s.replace('\n', '') for s in erg if s.strip('\n')]
-    not_allowed = ["become a supplier", "* Places to see  *", "Company  *", "Work With Us  *"]
-    allowd = [word for word in erg
-            if not any(verbot.lower() in word.lower() for verbot in not_allowed)]
-    return {"list_with_text": allowd}
+    erg = "".join([s.replace('\n', '') for s in erg if s.strip('\n')])
+
+    return {"list_with_text": erg}

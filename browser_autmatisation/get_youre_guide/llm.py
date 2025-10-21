@@ -1,8 +1,8 @@
 from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import MessagesPlaceholder
-from state import state, isevent, ActivityListing, ActivityListing_advanced, Advanced, has_more_info
-from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt
+from state import state, isevent, ActivityListing, ActivityListing_advanced, Advanced, has_more_info, highlights, meeting_point, full_description, includes
+from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt, deep_extracter
 from scraper import get_youre_data
 from scraper import splitting_events
 is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000)
@@ -63,8 +63,9 @@ def json_format(state:state): #erstellt das json format
 
 from time import sleep
 
-def create_obj(state:state): #Das soll die Objecte also die den Markdown text zu den einzelnen activen erstellen
-    sleep(1)
+def get_deep_link(state:state): #Das soll die Objecte also die den Markdown text zu den einzelnen activen erstellen
+    """Zuständig für den Web Part, also für Link getting, richtig formatieren, dann webseite auf rufen"""
+    sleep(1) 
     new_version = state["ergebnisse"]
     obj: ActivityListing = state["ergebnisse"][0]
     
@@ -76,6 +77,7 @@ def create_obj(state:state): #Das soll die Objecte also die den Markdown text zu
     if link[0][-6:-1] == ".jpeg":
         raise Exception("Falsches Format")
     markdown = get_youre_data(state)
+    return markdown
     is_event_mode = is_event_model.with_structured_output(has_more_info)
     erg = []
     for i in markdown["list_with_text"]: 
@@ -105,6 +107,9 @@ def create_obj(state:state): #Das soll die Objecte also die den Markdown text zu
     davor_und_jetzt.append(ende)
     return {"ergebnisse": new_version, "structured_obj": davor_und_jetzt}
 
+
+
+
 def formater(state:state):
     erg = state["list_with_text"]
     erg = splitting_events(erg)
@@ -112,17 +117,29 @@ def formater(state:state):
 
 
 
-def extracter_for_deep_analyst(titel):
-    
-    special = json_format_model
-
+def extracter_for_deep_analyst(struc, titel, text):
+    special_model = json_format_model.with_structured_output(struc)
+    erg = special_model.invoke(deep_extracter.invoke({"Titel": titel, "Schemah":struc.model_json_schemah(), "text": text}))
+    return special_model.invoke(erg)
 action_map = {
 
-    "## Highlights": lambda m, t: extracter_for_deep_analyst(messagePropmtTemplate=m, titel=t),
-    "## Meeting point": lambda m, t: extracter_for_deep_analyst(messagePropmtTemplate=m, titel=t),
-    "## Full description": lambda m, t: extracter_for_deep_analyst(messagePropmtTemplate=m, titel=t),
-    "## Includes": lambda m, t: extracter_for_deep_analyst(messagePropmtTemplate=m, titel=t)
+    "## Highlights": lambda t, text: extracter_for_deep_analyst(struc=highlights, titel=t, text=text),
+    "## Meeting point": lambda t, text: extracter_for_deep_analyst(struc=meeting_point, titel=t, text=text),
+    "## Full description": lambda t, text: extracter_for_deep_analyst(struc=full_description, titel=t, text=text),
+    "## Includes": lambda t, text: extracter_for_deep_analyst(struc=includes, titel=t, text=text)
 }
 
-def deep_analyst(state:state):
-    None
+def create_obj(state:state):#deep_analyst
+    keywords = ["## Highlights", "## Meeting point","## Full description","## Includes"]
+    ergebnisse = []
+    for key in keywords:
+        for text in state["text_broken"]:
+            if key in text:
+                erg = action_map[key](m=None, t=key, text=text)
+                ergebnisse.append(erg)
+    
+    obj = Advanced(**ergebnisse[0], **ergebnisse[1],**ergebnisse[2], **ergebnisse[3])
+
+    return obj
+    
+        

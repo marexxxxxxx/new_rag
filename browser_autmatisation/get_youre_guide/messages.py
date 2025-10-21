@@ -152,7 +152,9 @@ Extract the relevant data from the text below and return it strictly as JSON tha
 deep_extracter = ChatPromptTemplate.from_messages([
     ("system", """
 You should extract the {Titel}
+The Schemah provided:
+     {Schemah}
 """),
-("human","{Text}")
+("human","{text}")
 ])
 
