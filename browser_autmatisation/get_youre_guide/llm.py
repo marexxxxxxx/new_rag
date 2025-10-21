@@ -4,7 +4,7 @@ from langchain_core.prompts import MessagesPlaceholder
 from state import state, isevent, ActivityListing, ActivityListing_advanced, Advanced, has_more_info, highlights, meeting_point, full_description, includes
 from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt, deep_extracter
 from scraper import get_youre_data
-from scraper import splitting_events
+from scraper import splitting_events, splitt_and_cut
 is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000)
 json_format_model   = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, num_predict=1500)
 
@@ -76,8 +76,10 @@ def get_deep_link(state:state): #Das soll die Objecte also die den Markdown text
     state["link"] = link
     if link[0][-6:-1] == ".jpeg":
         raise Exception("Falsches Format")
-    markdown = get_youre_data(state)
-    return markdown
+    
+    return {"link": link, "advanced_current_obj": obj, "ergebnisse": new_version}
+
+
     is_event_mode = is_event_model.with_structured_output(has_more_info)
     erg = []
     for i in markdown["list_with_text"]: 
@@ -120,7 +122,7 @@ def formater(state:state):
 def extracter_for_deep_analyst(struc, titel, text):
     special_model = json_format_model.with_structured_output(struc)
     erg = special_model.invoke(deep_extracter.invoke({"Titel": titel, "Schemah":struc.model_json_schemah(), "text": text}))
-    return special_model.invoke(erg)
+    return special_model.invoke(erg).model_dump_json()
 action_map = {
 
     "## Highlights": lambda t, text: extracter_for_deep_analyst(struc=highlights, titel=t, text=text),
@@ -129,17 +131,20 @@ action_map = {
     "## Includes": lambda t, text: extracter_for_deep_analyst(struc=includes, titel=t, text=text)
 }
 
-def create_obj(state:state):#deep_analyst
+def deep_analyst(state:state):#
+    erg = splitt_and_cut(state["list_with_text"])
     keywords = ["## Highlights", "## Meeting point","## Full description","## Includes"]
     ergebnisse = []
     for key in keywords:
-        for text in state["text_broken"]:
+        for text in erg:
             if key in text:
                 erg = action_map[key](m=None, t=key, text=text)
                 ergebnisse.append(erg)
     
     obj = Advanced(**ergebnisse[0], **ergebnisse[1],**ergebnisse[2], **ergebnisse[3])
-
-    return obj
+    ende = ActivityListing_advanced(**state["advanced_current_obj"],**obj)
+    letzte_liste = state["result_list"]
+    letzte_liste.append(ende)
+    return {"advanced_current_obj": None, "result_liste": letzte_liste}
     
         

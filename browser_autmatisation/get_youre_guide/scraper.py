@@ -33,8 +33,9 @@ def splitting_events(erg):
     sammlung = re.split(r'\[ !', erg)
     return sammlung
 
-def splitt_and_cut(state: state):
-    extracted_regex = re.findall(r"^(## .*?)(?=\n^##|\Z)", state["text"], re.MULTILINE | re.DOTALL)
+def splitt_and_cut(text):
+    extracted_regex = re.findall(r"^(## .*?)(?=\n^##|\Z)", text, re.MULTILINE | re.DOTALL)
+    return extracted_regex
 
 
 
@@ -47,6 +48,6 @@ def get_youre_data(state:state):
             result = await crawl.arun(url=link)
         return result.markdown
     erg = asyncio.run(get_youre_dat(state["link"]))
-    erg = "".join([s.replace('\n', '') for s in erg if s.strip('\n')])
+    erg = "".join([s.replace('\n', '') for s in erg if s.strip('\n')]) #muss eventuell entfernt werden da es dem regex probleme machen könnte
 
     return {"list_with_text": erg}

@@ -4,18 +4,14 @@ from langgraph.graph import StateGraph
 from beispiel import test
 
 class state(TypedDict):
+    #PremierTeil
     current_obj: Annotated[str,"Object with the current event."]
-
     ergebnisse: Annotated[list, "Object with all of the events"] # D
-    deep_ergebnisse: Annotated[list, "A more deeper version of the ergebnisse"]
     list_with_text: Annotated[list, "List with the text"]
-    list_with_check: Annotated[list, "Accpeted text"]
     link: Annotated[list[str], "The list with the links to check"]
-
-    list_obj: Annotated[list[str],"The Deeperversion of an element, just the plain text not organized."]
-    structured_obj: Annotated[list, "The Deepversion of the events, with all informations, organized"]
-
-
+    #SecoundarTeil
+    advanced_current_obj = Annotated[list[str], "The current Object to get a detailed extract from"]
+    result_list: Annotated[list, "List with the final objects"]
 
 class isevent(BaseModel):
     is_event: Annotated[bool,"Is the given text a event"]
