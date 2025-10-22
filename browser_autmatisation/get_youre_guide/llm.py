@@ -121,11 +121,18 @@ def formater(state:state):
 
 
 
+obj_creater = {
+    "## highlights": lambda inhalt: highlights(**inhalt),
+    "## meeting point": lambda inhalt: meeting_point(**inhalt),
+    "## full description": lambda inhalt: full_description(**inhalt),
+    "## includes": lambda inhalt: inhalt
+}
+
 def extracter_for_deep_analyst(struc, titel, text):
     special_model = json_format_model.with_structured_output(struc)
     erg = special_model.invoke(deep_extracter.invoke({"Titel": titel, "Schemah":struc, "text": text}))
-    
-    return erg
+    antwort = obj_creater[titel](inhalt=erg)
+    return antwort
 
 action_map = {
 
@@ -152,19 +159,24 @@ def deep_analyst(state:state):#
         for key in keywords:
             if key in text.lower():
                 erg = action_map[key](t=key, text=text)
-                ergebnisse[umwandler[key]] = erg[umwandler[key]]
-    erg0 = highlights(highlights=ergebnisse['highlights'])
-    erg1 = full_description(full_description=ergebnisse['full_description'])
-    erg2 = includes(what_to_bring=ergebnisse['what_to_bring'], not_good=ergebnisse['not_good'], know_bevor_go=ergebnisse['know_bevor_go'])
-    erg3 = meeting_point(meeting_point=ergebnisse['meeting_point'])
-
+                ergebnisse[umwandler[key]] = erg
+    
+    if 'meeting_point' not in ergebnisse:
+        ergebnisse['meeting_point'] = meeting_point(meeting_point={"nothing_here"})
+    if 'highlights' not in ergebnisse:
+        ergebnisse['highlights'] = highlights(highlights=["War nicht in den Daten enthalten"])
+    if 'full_description' not in ergebnisse:
+        ergebnisse['full_description'] = full_description(full_description="War nicht in den Daten")
+    if 'includes' not in ergebnisse:
+        ergebnisse["includes"] = includes(what_to_bring=["War nicht in den Daten Enthalten"], not_good=["War nicht in den Daten Enthalten"], know_bevor_go=["War nicht in den Daten Enthalten"])
     obj = Advanced(
-    highlights=erg0,
-    full_description=erg1,
-    includes=erg2,
-    meeting_point=erg3
+    highlights=ergebnisse['highlights'],
+    full_description=ergebnisse['full_description'],
+    includes=ergebnisse['includes'],
+    meeting_point=ergebnisse['meeting_point']
 )
-    ende = ActivityListing_advanced(**state["advanced_current_obj"],**obj)
+    einf = state["advanced_current_obj"]
+    ende = ActivityListing_advanced(ActivityListing=einf, Advanced=obj)
     letzte_liste = state["result_list"]
     letzte_liste.append(ende)
     return {"advanced_current_obj": None, "result_liste": letzte_liste}

@@ -10,7 +10,7 @@ class state(TypedDict):
     list_with_text: Annotated[list, "List with the text"]
     link: Annotated[list[str], "The list with the links to check"]
     #SecoundarTeil
-    advanced_current_obj = Annotated[list[str], "The current Object to get a detailed extract from"]
+    advanced_current_obj: Annotated[..., "The current Object to get a detailed extract from"]
     result_list: Annotated[list, "List with the final objects"]
 
 class isevent(BaseModel):
@@ -60,5 +60,6 @@ class Advanced(BaseModel):
     includes: includes
     meeting_point: meeting_point
 
-class ActivityListing_advanced(ActivityListing):
-    Advanced
+class ActivityListing_advanced(BaseModel):
+    ActivityListing: ActivityListing
+    Advanced: Advanced
