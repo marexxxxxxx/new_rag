@@ -333,5 +333,6 @@ action_map = {
 
 from state import highlights
 from pydantic import BaseModel
-
-print(highlights.model_json_schema())
+link = '![](https://cdn.getyourguide.com/image/format=auto,fit=crop,gravity=auto,quality=60,width=270,height=180/tour_img/6d72bc1d50214d19.jpeg)\n'
+if ".jpeg" in link:
+    print("wuhuuuuuuuuuuuuuuu")

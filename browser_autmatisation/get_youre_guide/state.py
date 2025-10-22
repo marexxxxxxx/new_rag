@@ -46,11 +46,13 @@ class meeting_point(BaseModel):
 class full_description(BaseModel):
     full_description: Annotated[str, "The whole description"]
 
+class all_includes(BaseModel):
+    None
+
 class includes(BaseModel):
     what_to_bring: Annotated[list, "Things you should bring with, or would be great"]
     not_good: Annotated[list, "Things that are not allowd or not suitiblie things"]
     know_bevor_go: Annotated[list, "Things that do not fit in the other categories"]
-    
 
 class Advanced(BaseModel):
     highlights: highlights

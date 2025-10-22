@@ -36,9 +36,9 @@ def event_checker(state: state): #Findet herraus, was events sind, und was nicht
 
 def link_formater(erg: ActivityListing): #verändert die postion des links sp, das der .jpeg link postion 0 ist
     links = erg.url
-    if links[0][-6:-1] == ".jpeg":
+    if ".jpeg" not in links[0]:
         return erg
-    elif links[0][-6:-1] == ".jpeg":
+    elif ".jpeg" in links[0]:
         better_links = [links[1], links[0]]
         erg.url = better_links
         return erg
@@ -72,9 +72,11 @@ def get_deep_link(state:state): #Das soll die Objecte also die den Markdown text
     new_version.pop(0)
     if obj.title.lower() in ["rating rules", "company", "jobs", "work with us"]:
         return {"ergebnisse": new_version} 
+    obj = link_formater(obj)
     link = obj.url[0]
     state["link"] = link
-    if link[0][-6:-1] == ".jpeg":
+
+    if ".jpeg" in link:
         raise Exception("Falsches Format")
     
     return {"link": link, "advanced_current_obj": obj, "ergebnisse": new_version}
@@ -121,27 +123,47 @@ def formater(state:state):
 
 def extracter_for_deep_analyst(struc, titel, text):
     special_model = json_format_model.with_structured_output(struc)
-    erg = special_model.invoke(deep_extracter.invoke({"Titel": titel, "Schemah":struc.model_json_schemah(), "text": text}))
-    return special_model.invoke(erg).model_dump_json()
+    erg = special_model.invoke(deep_extracter.invoke({"Titel": titel, "Schemah":struc, "text": text}))
+    
+    return erg
+
 action_map = {
 
-    "## Highlights": lambda t, text: extracter_for_deep_analyst(struc=highlights, titel=t, text=text),
-    "## Meeting point": lambda t, text: extracter_for_deep_analyst(struc=meeting_point, titel=t, text=text),
-    "## Full description": lambda t, text: extracter_for_deep_analyst(struc=full_description, titel=t, text=text),
-    "## Includes": lambda t, text: extracter_for_deep_analyst(struc=includes, titel=t, text=text)
+    "## highlights": lambda t, text: extracter_for_deep_analyst(struc=highlights.model_json_schema(), titel=t, text=text),
+    "## meeting point": lambda t, text: extracter_for_deep_analyst(struc=meeting_point.model_json_schema(), titel=t, text=text),
+    "## full description": lambda t, text: extracter_for_deep_analyst(struc=full_description.model_json_schema(), titel=t, text=text),
+    "## includes": lambda t, text: extracter_for_deep_analyst(struc=includes.model_json_schema(), titel=t, text=text)
 }
+
+umwandler = {
+    "## highlights": "highlights",
+    "## meeting point": "meeting_point",
+    "## full description": "full_description",
+    "## includes": "includes"
+}
+
 
 def deep_analyst(state:state):#
     erg = splitt_and_cut(state["list_with_text"])
-    keywords = ["## Highlights", "## Meeting point","## Full description","## Includes"]
-    ergebnisse = []
-    for key in keywords:
-        for text in erg:
-            if key in text:
-                erg = action_map[key](m=None, t=key, text=text)
-                ergebnisse.append(erg)
+    keywords = ["## highlights","## full description","## includes", "## meeting point"]
+    ergebnisse = {}
     
-    obj = Advanced(**ergebnisse[0], **ergebnisse[1],**ergebnisse[2], **ergebnisse[3])
+    for text in erg:
+        for key in keywords:
+            if key in text.lower():
+                erg = action_map[key](t=key, text=text)
+                ergebnisse[umwandler[key]] = erg[umwandler[key]]
+    erg0 = highlights(highlights=ergebnisse['highlights'])
+    erg1 = full_description(full_description=ergebnisse['full_description'])
+    erg2 = includes(what_to_bring=ergebnisse['what_to_bring'], not_good=ergebnisse['not_good'], know_bevor_go=ergebnisse['know_bevor_go'])
+    erg3 = meeting_point(meeting_point=ergebnisse['meeting_point'])
+
+    obj = Advanced(
+    highlights=erg0,
+    full_description=erg1,
+    includes=erg2,
+    meeting_point=erg3
+)
     ende = ActivityListing_advanced(**state["advanced_current_obj"],**obj)
     letzte_liste = state["result_list"]
     letzte_liste.append(ende)
