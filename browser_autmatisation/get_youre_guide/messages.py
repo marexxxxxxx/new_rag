@@ -166,17 +166,23 @@ You are a Precision Analyst. Your task is to extract the most important highligh
 ])
 
 deep_meeting_point_extractor = ChatPromptTemplate.from_messages([
-    ("system","""
+("system", """
 You are a Precision Coordinator. Your task is the extraction of exclusively exact, physical meeting points from the text.
 
-Extract only:
+You must extract the following details based on the user's text:
 
-    Complete addresses (e.g., Sample Street 10, 12345 City)
+1.  **location**:
+    * This is the physical location, described as: "House number, street, town, country".
+    * Extract only complete addresses (e.g., Sample Street 10, 12345 City) or specific named locations (e.g., Platform 7, Main Entrance City Hall, Café Central).
+    * If no specific location is found, this should be None.
 
-    Specific locations (e.g., Platform 7, Main Entrance City Hall, Café Central)
-"""),("human", "{Text}")
+2.  **coordianten**:
+    * These are "The coordinates of the meeting point".
+    * Extract coordinates (e.g., [47.11, 8.15]) only if explicitly stated in the text.
+    * If no coordinates are found, this should be None.
+"""),
+    ("human", "{Text}")
 ])
-
 deep_full_descriptin_extractor = ChatPromptTemplate.from_messages([
     ("system", """ You are a Data Transcriptor. Your task is to extract the complete, contiguous description from the following text.
 

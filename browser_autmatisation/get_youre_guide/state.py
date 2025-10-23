@@ -41,7 +41,8 @@ class highlights(BaseModel):
     highlights: Annotated[list[str], "A list of the Highlights"]
 
 class meeting_point(BaseModel):
-    meeting_point: Annotated[list, "The meeting point where the people have to come"]
+    coordianten: Annotated[Union[None, list[float,float]],"The coordinates of the meeting point"]
+    location: Annotated[Union[None, str], "House number, street, town, country"]
 
 class full_description(BaseModel):
     full_description: Annotated[str, "The whole description"]

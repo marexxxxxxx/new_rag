@@ -130,7 +130,7 @@ def deep_analyst(state:state):#
                 ergebnisse[umwandler[key]] = erg
     
     if 'meeting_point' not in ergebnisse:
-        ergebnisse['meeting_point'] = meeting_point(meeting_point={"nothing_here"})
+        ergebnisse['meeting_point'] = meeting_point(coordianten={0}, location="Keine ANgeaben im Text")
     if 'highlights' not in ergebnisse:
         ergebnisse['highlights'] = highlights(highlights=["War nicht in den Daten enthalten"])
     if 'full_description' not in ergebnisse:
