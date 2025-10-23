@@ -14,3 +14,4 @@ crawl4ai[all]
 fastmcp
 
 llama-index-embeddings-huggingface
+langchain_community
