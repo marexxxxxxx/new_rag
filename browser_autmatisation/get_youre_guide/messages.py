@@ -158,3 +158,43 @@ The Schemah provided:
 ("human","{text}")
 ])
 
+deep_highlight_extractor = ChatPromptTemplate.from_messages([
+    ("system","""
+You are a Precision Analyst. Your task is to extract the most important highlights from the following text. Highlights are the central facts, most important results, or core statements. Ignore introductions, filler words, and trivialities. Concentrate only on the core information.
+     """),
+     ("human", "{Text}")
+])
+
+deep_meeting_point_extractor = ChatPromptTemplate.from_messages([
+    ("system","""
+You are a Precision Coordinator. Your task is the extraction of exclusively exact, physical meeting points from the text.
+
+Extract only:
+
+    Complete addresses (e.g., Sample Street 10, 12345 City)
+
+    Specific locations (e.g., Platform 7, Main Entrance City Hall, Café Central)
+"""),("human", "{Text}")
+])
+
+deep_full_descriptin_extractor = ChatPromptTemplate.from_messages([
+    ("system", """ You are a Data Transcriptor. Your task is to extract the complete, contiguous description from the following text.
+
+Important Instruction: You must not omit, summarize, or change anything. Extract the entire block of text that constitutes the description. Only ignore irrelevant metadata or titles, if present. """), 
+("human", "{Text}") 
+])
+
+
+deep_includes_extractor = ChatPromptTemplate.from_messages([
+    ("system", """
+You are a **Tour Preparation Specialist**. Your sole task is to analyze the provided text and strictly categorize all essential information into the three required lists: **What to Bring**, **Not Allowed**, and **Need to Know**.
+
+**INSTRUCTIONS:**
+1.  **what_to_bring:** Extract items that must be carried or worn.
+2.  **not_good:** Extract all prohibitions, restrictions, or highly unsuited items/actions.
+3.  **know_bevor_go:** Extract all remaining crucial details regarding logistics, timing, physical requirements, or organizational specifics.
+
+Focus on precision. Do not summarize or invent information.
+"""),
+    ("human", "{Text}")
+])

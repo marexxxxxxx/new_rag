@@ -44,10 +44,6 @@ graph.add_conditional_edges(DEEP_ANALYST, go_deeper_check, {0: GET_DEEP_LINK, 1:
 
 app = graph.compile()
 
-from IPython.display import Image, display
-png = app.get_graph().draw_mermaid_png()
-display(Image(png))
-from beispiel import test
 
 b = app.invoke({
     "link": "https://www.getyourguide.com/fuerteventura-l419/",

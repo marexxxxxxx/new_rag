@@ -2,7 +2,7 @@ from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import MessagesPlaceholder
 from state import state, isevent, ActivityListing, ActivityListing_advanced, Advanced, has_more_info, highlights, meeting_point, full_description, includes
-from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt, deep_extracter
+from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt, deep_extracter, deep_full_descriptin_extractor, deep_highlight_extractor, deep_meeting_point_extractor, deep_includes_extractor
 from scraper import get_youre_data
 from scraper import splitting_events, splitt_and_cut
 is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000)
@@ -82,38 +82,6 @@ def get_deep_link(state:state): #Das soll die Objecte also die den Markdown text
     return {"link": link, "advanced_current_obj": obj, "ergebnisse": new_version}
 
 
-    is_event_mode = is_event_model.with_structured_output(has_more_info)
-    erg = []
-    for i in markdown["list_with_text"]: 
-        test: has_more_info = is_event_mode.invoke(deep_analyst_prompt.invoke({"text": i}))
-        if test.has_more == True:
-            erg.append(i)
-    structer = is_event_model.with_structured_output(Advanced)
-    for _ in range(2):
-        try: 
-            ergb = structer.invoke(deep_struter_prompt.invoke({"text": str(erg)}))
-            break
-        except:
-            sleep(2)
-            return {"ergebnisse": new_version}
-    
-    try:
-        ende = ActivityListing_advanced(**obj.model_dump(),**ergb.model_dump())
-    except:
-        Exception("Unvollständig")
-        print("Unvollständig")
-        # 'a' (Append) öffnet die Datei und setzt den Cursor ans Ende.
-        with open("verloren_gegange.txt", "a") as t:
-            print("da ist was hopssssss")
-            t.write(f"\n \n \n \n \n {obj}")
-        return {"ergebnisse": new_version}
-    davor_und_jetzt = state["structured_obj"]
-    davor_und_jetzt.append(ende)
-    return {"ergebnisse": new_version, "structured_obj": davor_und_jetzt}
-
-
-
-
 def formater(state:state):
     erg = state["list_with_text"]
     erg = splitting_events(erg)
@@ -128,18 +96,18 @@ obj_creater = {
     "## includes": lambda inhalt: inhalt
 }
 
-def extracter_for_deep_analyst(struc, titel, text):
+def extracter_for_deep_analyst(struc, titel, text, message):
     special_model = json_format_model.with_structured_output(struc)
-    erg = special_model.invoke(deep_extracter.invoke({"Titel": titel, "Schemah":struc, "text": text}))
+    erg = special_model.invoke(message.invoke({"Text": text}))
     antwort = obj_creater[titel](inhalt=erg)
     return antwort
 
 action_map = {
 
-    "## highlights": lambda t, text: extracter_for_deep_analyst(struc=highlights.model_json_schema(), titel=t, text=text),
-    "## meeting point": lambda t, text: extracter_for_deep_analyst(struc=meeting_point.model_json_schema(), titel=t, text=text),
-    "## full description": lambda t, text: extracter_for_deep_analyst(struc=full_description.model_json_schema(), titel=t, text=text),
-    "## includes": lambda t, text: extracter_for_deep_analyst(struc=includes.model_json_schema(), titel=t, text=text)
+    "## highlights": lambda t, text : extracter_for_deep_analyst(struc=highlights.model_json_schema(), titel=t, text=text, message=deep_highlight_extractor),
+    "## meeting point": lambda t, text: extracter_for_deep_analyst(struc=meeting_point.model_json_schema(), titel=t, text=text, message=deep_meeting_point_extractor),
+    "## full description": lambda t, text: extracter_for_deep_analyst(struc=full_description.model_json_schema(), titel=t, text=text, message=deep_full_descriptin_extractor),
+    "## includes": lambda t, text: extracter_for_deep_analyst(struc=includes.model_json_schema(), titel=t, text=text, message=deep_includes_extractor)
 }
 
 umwandler = {

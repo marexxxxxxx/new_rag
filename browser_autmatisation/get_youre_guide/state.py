@@ -46,13 +46,11 @@ class meeting_point(BaseModel):
 class full_description(BaseModel):
     full_description: Annotated[str, "The whole description"]
 
-class all_includes(BaseModel):
-    None
-
 class includes(BaseModel):
-    what_to_bring: Annotated[list, "Things you should bring with, or would be great"]
-    not_good: Annotated[list, "Things that are not allowd or not suitiblie things"]
-    know_bevor_go: Annotated[list, "Things that do not fit in the other categories"]
+    """Essential information and preparation notes for a travel experience."""
+    what_to_bring: Annotated[list[str], "Items the participant must bring or would be beneficial to have (e.g., water, camera, suitable clothing)."]
+    not_good: Annotated[list[str], "Items or behaviors that are strictly forbidden, not suitable, or strongly advised against (e.g., large bags, pets, inappropriate attire)."]
+    know_bevor_go: Annotated[list[str], "Crucial organizational or physical notes that do not fit the other categories (e.g., duration, accessibility, check-in details, language)."]
 
 class Advanced(BaseModel):
     highlights: highlights
