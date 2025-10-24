@@ -76,3 +76,8 @@ def builder(state:state):
 
     event_node(**basic.dict(), **advanced.dict())
     return {"result_list":new_ergebnisse}
+
+
+
+result = graph_store.structured_query("MATCH (n: embedding) RETURN n")
+print(result)
