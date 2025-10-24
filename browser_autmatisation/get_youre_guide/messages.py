@@ -45,7 +45,7 @@ Extract the relevant data from the text below and return it strictly as JSON tha
 
 SCHEMA:
 {{
-  "title": string,
+  "name": string,
   "rating_average": float,
   "rating_count": int,
   "price_value": float,

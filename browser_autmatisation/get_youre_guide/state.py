@@ -23,7 +23,7 @@ class ActivityListing(BaseModel):
     A concise Pydantic model for an activity listing.
     """
 
-    title: Annotated[str, "The name of the activity."]
+    name: Annotated[str, "The name of the activity."]
     rating_average: Annotated[float, "The average star rating (e.g., 4.3)."]
     rating_count: Annotated[int,"The total number of ratings (e.g., 1157."]
     price_value: Annotated[float, "The base price (e.g., 140)."]
