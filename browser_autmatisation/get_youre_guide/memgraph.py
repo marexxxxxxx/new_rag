@@ -8,9 +8,7 @@ from langchain_ollama import OllamaEmbeddings
 
 embedder = OllamaEmbeddings(model="hf.co/leliuga/all-MiniLM-L6-v2-GGUF:F16")
 
-Settings.embed_model =HuggingFaceEmbedding(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
+Settings.embed_model=embedder
 Settings.llm=None
 
 username = ""
@@ -54,6 +52,7 @@ def event_node(name, rating_average,rating_count,price_value,price_currency,pric
 
     embeddings_description = embedder.embed_query(str(full_description['full_description']))
     embedding = ChunkNode(
+        label=name
         text=str(full_description['full_description']),
         embedding=embeddings_description,
         meta_data={}
