@@ -15,3 +15,4 @@ fastmcp
 
 llama-index-embeddings-huggingface
 langchain_community
+browser-use
