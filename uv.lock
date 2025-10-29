@@ -511,6 +511,23 @@ wheels = [
 ]
 
 [[package]]
+name = "kernel"
+version = "0.17.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "distro" },
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "sniffio" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d2/45/43a319432094bd1c86189de70e376e67b45aca8dac4c3d2b871283e0f153/kernel-0.17.0.tar.gz", hash = "sha256:d2c403f8957f4d7b2cdeb62c970ddcf2965f8ef54fdfffdcd0c2aa8f98ec6fd4", size = 153250, upload-time = "2025-10-27T19:48:50.975Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/06/b8c495ae292c7508d476b4fb4f1b0a2d05d8fe1b9bdf527dbd2c46e7c897/kernel-0.17.0-py3-none-any.whl", hash = "sha256:b1b236ae6acb62444289a3fb8023b0fdda8d4cd83144e48b92a080af1dccefde", size = 166003, upload-time = "2025-10-27T19:48:49.634Z" },
+]
+
+[[package]]
 name = "llama-cloud"
 version = "0.1.35"
 source = { registry = "https://pypi.org/simple" }
@@ -892,11 +909,15 @@ name = "new-rag"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "kernel" },
     { name = "llama-index" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "llama-index", specifier = ">=0.14.3" }]
+requires-dist = [
+    { name = "kernel", specifier = ">=0.17.0" },
+    { name = "llama-index", specifier = ">=0.14.3" },
+]
 
 [[package]]
 name = "nltk"

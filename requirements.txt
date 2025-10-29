@@ -16,3 +16,4 @@ fastmcp
 llama-index-embeddings-huggingface
 langchain_community
 pip install langchain-mcp-adapters
+kernel
