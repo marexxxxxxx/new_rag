@@ -1,0 +1,33 @@
+# Dies ist eine vollständige docker-compose.yml für ein Selenium Grid
+
+services:
+  # 1. Der Selenium Hub (Router)
+  # Dieser Service hat in Ihrem Snippet gefehlt, ist aber die Abhängigkeit (depends_on).
+  selenium-hub:
+    image: selenium/hub:latest # Empfehlung: Eine spezifische Version pinnen
+    container_name: selenium-hub
+    ports:
+      # Port für die Annahme von Test-Befehlen (z.B. vom Test-Runner)
+      - "4444:4444"
+      # Ports für das Event Bus System (intern von den Nodes genutzt)
+      - "4442:4442"
+      - "4443:4443"
+      - "7900:7900"
+
+  # 2. Der Chrome-Node (Ihr bereitgestellter Service)
+  chrome:
+    # Das Image wurde auf 'latest' aktualisiert. 
+    # Ihr Image (4.7.2-20221219) war stark veraltet.
+    image: selenium/node-chrome:latest 
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      # Diese Variablen sind korrekt, um den Node explizit mit dem 
+      # Event Bus des Hubs zu verbinden.
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      # Optional: Erhöht die Stabilität bei parallelen Sessions
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
