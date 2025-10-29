@@ -4,15 +4,23 @@ from browser_use import ChatOllama
 
 async def get_link_basic(location):
     model = ChatOllama(model="hf.co/unsloth/Qwen3-8B-GGUF:Q4_K_S")
-    browser = Browser(headless=False, keep_alive=False,cdp_url="ws://localhost:4444")
-    #wird benötigt um den fokus auf die richtige seite zu lenken.
-
+    browser = Browser(headless=False, keep_alive=True, cdp_url="ws://localhost:9222")
+    
+    
     await browser.start()
     page = await browser.new_page("https://www.getyourguide.com/")
-    all_pages = await browser.get_current_page()
-    await browser.close_page(all_pages)
+    pages = await browser.get_pages()
+    print(pages)
+    print("t")
+    await asyncio.sleep(2)
+    for i in pages:
+        title = await i.get_url()
+        if title =="https://www.getyourguide.com/":
+            pages = i
+        print(title)
+    current_page = await browser.get_current_page()
     
-    await asyncio.sleep(5)
+
     print("Search for Cookie Banner...")
     cookie_banner = await page.must_get_element_by_prompt("Find the primary, highlighted confirmation button on the cookie consent banner. This button accepts all cookies and might be labeled 'I agree'.", llm=model)
     await cookie_banner.click()
@@ -44,4 +52,27 @@ async def get_link_basic(location):
 
 
 
-asyncio.run(get_link_basic("Fuerteventura"))
+
+asyncio.run(get_link_basic("malle"))
+async def main():
+    
+
+# Create and start browser session
+    browser = Browser(headless=False)
+    await browser.start()
+
+    # Create new tabs and navigate
+    await browser.new_page("https://example.com")
+    await browser.new_page("https://another-example.com") # Zweiter Tab
+    pages = await browser.get_pages()
+    print(pages)
+    print("t")
+    await asyncio.sleep(2)
+    for i in pages:
+        title = await i.get_url()
+        if title =="about:blank":
+            await browser.close_page(i)
+        print(title)
+    current_page = await browser.get_current_page()
+
+#asyncio.run(main())
