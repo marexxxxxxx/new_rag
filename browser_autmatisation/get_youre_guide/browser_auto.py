@@ -1,63 +1,53 @@
-from browser_use import Agent, ChatOllama
+from browser_use import Browser
+import asyncio
+from browser_use import ChatOllama
 
-
-task = """
-
-1. Go to https://www.getyourguide.com/
-2. Take a screenshot of the page.
-3. Wait 2 seconds.
-4. Use find_text to locate the 'I agree' button (cookie acceptance).
-5. Take a screenshot before clicking.
-6. Click the 'I agree' button.
-7. Wait 2 seconds.
-8. Take a screenshot after click.
-9. Use find_text to find the element labeled 'Find places and things to do'.
-10. Take a screenshot before clicking.
-11. Click this element.
-12. Wait 2 seconds.
-13. Take a screenshot after click.
-14. Use send_keys to type 'Fuerteventura' in the search bar.
-15. Take a screenshot after typing.
-16. Wait 1 second.
-17. Use find_text to find the button labeled 'Anytime'.
-18. Take a screenshot before clicking.
-19. Click the 'Anytime' button.
-20. Wait 1 second.
-21. Take a screenshot after click.
-22. Use find_text to locate the date selector for '28 October'.
-23. Take a screenshot before clicking.
-24. Click '28 October'.
-25. Wait 1 second.
-26. Take a screenshot after click.
-27. Use find_text to locate the date selector for '30 October'.
-28. Take a screenshot before clicking.
-29. Click '30 October'.
-30. Wait 1 second.
-31. Take a screenshot after click.
-32. (Optional: If only '29 October' is available instead, select '29 October' and take a screenshot.)
-33. Use find_text to find the 'Search' button.
-34. Take a screenshot before clicking.
-35. Click 'Search'.
-36. Wait 3 seconds for results to load.
-37. Take a screenshot of the results page.
-38. Extract the results page link and return it.
-39. If any step fails, immediately take a screenshot and log the error before aborting.
-
-
-"""
-
-
-
-
-llm = ChatOllama(model="hf.co/unsloth/Apriel-1.5-15b-Thinker-GGUF:Q6_K")
-
-agent = Agent(
-    task=task,
-    llm=llm
-)
+# Model definieren
+model = ChatOllama(model="hf.co/unsloth/Qwen3-8B-GGUF:Q4_K_S")
 
 async def main():
-    history = await agent.run()
+    browser = Browser(headless=False, keep_alive=True)
+    await browser.start()
 
-import asyncio
+    page = await browser.new_page("https://www.getyourguide.com/")
+    print("Seite geladen")
+    
+    # ✓ RICHTIG: asyncio.sleep verwenden
+    await asyncio.sleep(10)
+    
+    print("Suche Element...")
+    # ✓ KRITISCH: llm Parameter MUSS angegeben werden!
+    erg = await page.must_get_element_by_prompt(
+        "The Searchbar for Inserting the Location. Its called 'Find Places and Things to do'",
+        llm=model  # ← DAS IST DER FEHLENDE PARAMETER!
+    )
+    print("Element gefunden:", erg)
+    
+    # ✓ RICHTIG: await bei fill()
+    await erg.click()
+    await asyncio.sleep(1)
+    await erg.fill("Fuerteventura")
+    print("Text eingegeben")
+    
+    await asyncio.sleep(2)
+    knopf = await page.must_get_element_by_prompt("The 'Search' Button Next to the 'Find Places and Things to do' Searchbar, Or Its called 'Anytime' But its still a date picker.", llm=model)
+    
+    await asyncio.sleep(5)
+    await knopf.click()
+    
+    await asyncio.sleep(10)
+    date = await page.must_get_element_by_prompt("The 'Dates' Category. its a datepicker.",llm=model)
+    await date.click()
+    
+    await asyncio.sleep(2)
+    date_begin = await page.must_get_element_by_prompt("The calendar day '23' specifically within the 'November 2025' column.",llm=model)
+    await date_begin.click()
+    
+    
+    await asyncio.sleep(2)
+    date_ende = await page.must_get_element_by_prompt("The 23 by The November Field",llm=model)
+    await date_ende.click()
+
+
+
 asyncio.run(main())
