@@ -4,13 +4,12 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import Settings
 from llama_index.core.graph_stores.types import EntityNode, ChunkNode, Relation
 from state import state
-from langchain_ollama import ChatOllama
+from langchain_ollama import OllamaEmbeddings
 
-embedder = ChatOllama(model="sentence-transformers/all-MiniLM-L6-v2")
+embedder = OllamaEmbeddings(model="hf.co/leliuga/all-MiniLM-L6-v2-GGUF:F16")
 
-Settings.embed_model =HuggingFaceEmbedding(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
+Settings.embed_model=embedder
+Settings.llm=None
 
 username = ""
 password = ""
@@ -34,7 +33,8 @@ def event_node(name, rating_average,rating_count,price_value,price_currency,pric
     event_node = EntityNode(
         name=name,
         label="event",
-        property={
+        properties={
+            "name":name,
             "rating_average": rating_average,
             "rating_count":rating_count,
             "price_value":price_value,
@@ -49,9 +49,11 @@ def event_node(name, rating_average,rating_count,price_value,price_currency,pric
             "meeting_point":meeting_point
         }
     )
-    embeddings_description = embedder.invoke({"human":full_description})
+
+    embeddings_description = embedder.embed_query(str(full_description['full_description']))
     embedding = ChunkNode(
-        text=full_description,
+        label=name
+        text=str(full_description['full_description']),
         embedding=embeddings_description,
         meta_data={}
     )
@@ -59,16 +61,22 @@ def event_node(name, rating_average,rating_count,price_value,price_currency,pric
     all = [embeddings_description,embedder]
     relation = Relation(
         label="HAS_DESCRIPTION",
-        source_id=event_node.id
+        source_id=event_node.id,
         target_id=embedding.id,
-        properties=["HAS_DESCRIPTION", "HAS_EMBEDDING"]
+        properties={"relationship_type": "content"}
     )
     graph_store.upsert_nodes([embedding,event_node])
     graph_store.upsert_relations([relation])
-
+import attr
 def builder(state:state):
-    get_current_node, new_ergebnisse = state["ergebnisse"][0], state["ergebnisse"]
+    get_current_node, new_ergebnisse = state["result_list"][0], state["result_list"]
     new_ergebnisse.pop(0)
-    basic, advanced = get_current_node['ActivityListing'], get_current_node['Advanced']
-    event_node(**basic, **advanced)
-    return {"ergebnisse":new_ergebnisse}
+    basic, advanced = get_current_node.ActivityListing, get_current_node.Advanced
+
+    event_node(**basic.dict(), **advanced.dict())
+    return {"result_list":new_ergebnisse}
+
+
+
+result = graph_store.structured_query("MATCH (n: embedding) RETURN n")
+print(result)

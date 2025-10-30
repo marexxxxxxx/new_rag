@@ -70,7 +70,7 @@ def get_deep_link(state:state): #Das soll die Objecte also die den Markdown text
     obj: ActivityListing = state["ergebnisse"][0]
     
     new_version.pop(0)
-    if obj.title.lower() in ["rating rules", "company", "jobs", "work with us"]:
+    if obj.name.lower() in ["rating rules", "company", "jobs", "work with us"]:
         return {"ergebnisse": new_version} 
     obj = link_formater(obj)
     link = obj.url[0]
