@@ -1,0 +1,38 @@
+
+new_rag browser_automatisation  ❯ python browser_autmatisation/get_youre_guide/get_youre_guide_automatisation.py 
+[INIT].... → Crawl4AI 0.7.4 
+[FETCH]... ↓ https://www.getyourguide.com/fuerteventura-l419/...6F8HDKUA11YE7AX4&locale_autoredirect_optout=true  | ✓ | ⏱: 1.97s 
+[SCRAPE].. ◆ https://www.getyourguide.com/fuerteventura-l419/...6F8HDKUA11YE7AX4&locale_autoredirect_optout=true  | ✓ | ⏱: 0.04s 
+[COMPLETE] ● https://www.getyourguide.com/fuerteventura-l419/...6F8HDKUA11YE7AX4&locale_autoredirect_optout=true  | ✓ | ⏱: 2.01s 
+i
+Traceback (most recent call last):
+  File "/home/user/Documents/Programmieren/AI/new_rag/browser_autmatisation/get_youre_guide/get_youre_guide_automatisation.py", line 32, in <module>
+    b = app.invoke({
+        ^^^^^^^^^^^^
+  File "/home/user/Documents/Programmieren/AI/new_rag/.venv/lib/python3.12/site-packages/langgraph/pregel/main.py", line 3085, in invoke
+    for chunk in self.stream(
+                 ^^^^^^^^^^^^
+  File "/home/user/Documents/Programmieren/AI/new_rag/.venv/lib/python3.12/site-packages/langgraph/pregel/main.py", line 2674, in stream
+    for _ in runner.tick(
+             ^^^^^^^^^^^^
+  File "/home/user/Documents/Programmieren/AI/new_rag/.venv/lib/python3.12/site-packages/langgraph/pregel/_runner.py", line 162, in tick
+    run_with_retry(
+  File "/home/user/Documents/Programmieren/AI/new_rag/.venv/lib/python3.12/site-packages/langgraph/pregel/_retry.py", line 42, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/Documents/Programmieren/AI/new_rag/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 657, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/Documents/Programmieren/AI/new_rag/.venv/lib/python3.12/site-packages/langgraph/_internal/_runnable.py", line 401, in invoke
+    ret = self.func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/Documents/Programmieren/AI/new_rag/browser_autmatisation/get_youre_guide/llm.py", line 59, in create_obj
+    markdown = get_youre_data(link)
+               ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/Documents/Programmieren/AI/new_rag/browser_autmatisation/get_youre_guide/scraper.py", line 46, in get_youre_data
+    erg = asyncio.run(get_youre_dat(state["link"]))
+                                    ~~~~~^^^^^^^^
+TypeError: string indices must be integers, not 'str'
+During task with name 'go_deeper' and id '2cbab551-fba5-31a1-2784-457b7ff7d0b5'
+
+new_rag browser_automatisation  ✗ 
