@@ -107,64 +107,47 @@ async def main():
     model = ChatOllama(model=llm)
     browser = Browser(headless=False, keep_alive=True, cdp_url=ws_link)
     
-    
     await browser.start()
-    await connect_playwright(cdp_url=ws_link)
-    
+    #await connect_playwright(cdp_url=ws_link)
     
     page = await browser.new_page("https://www.getyourguide.com/")
-    await asyncio.sleep(2)  # wenn explizite Wartezeit ausreicht
-    await makescreen("1", page)
-    print("test")
+    await asyncio.sleep(3) 
 
-
-
-    await asyncio.sleep(2)
-    
-
-    print("Search for Cookie Banner...")
     cookie_banner = await page.must_get_element_by_prompt("Find the primary, highlighted confirmation button on the cookie consent banner. This button accepts all cookies and might be labeled 'I agree'.", llm=model)
+    await asyncio.sleep(1)
+
     await cookie_banner.click()
     await asyncio.sleep(4)
-    await makescreen("2", page)
-    print("Cookiebanner wurde gefunden.")
-    erg = await page.must_get_element_by_prompt(
-        "The Searchbar for Inserting the Location. Its called 'Find Places and Things to do'",
-        llm=model  # ← DAS IST DER FEHLENDE PARAMETER!
-    )
-    print("Element gefunden:", erg)
-    await makescreen("3", page)
-    # ✓ RICHTIG: await bei fill()
-    await erg.click()
-    await asyncio.sleep(10)
-    await erg.fill("Fuerteventura")
-    await asyncio.sleep(10)
 
-    print("Text eingegeben")
-    await makescreen("4", page)
-    await asyncio.sleep(2)
+    print("Hat gestartet")
+
+    erg = await page.must_get_element_by_prompt("The Searchbar for Inserting the Location. Its called 'Find Places and Things to do'",llm=model)
+    await asyncio.sleep(0.7)
+
+    await erg.click()
+    await asyncio.sleep(4)
+
+    await erg.fill("Fuerteventura")
+    await asyncio.sleep(4)
+
+
     knopf = await page.must_get_element_by_prompt("The 'Search' Button Next to the 'Find Places and Things to do' Searchbar", llm=model)
-    print("Searchbar gefunden")
     await asyncio.sleep(2)
+
     await knopf.click()
-    #serachknopf wird via css gescarpt musss dringend überarbeitet werden für consitency
-    await asyncio.sleep(10)
+    await asyncio.sleep(4)
 
     uri = await page.get_url()
     while uri == "https://www.getyourguide.com/":
         knopf = await page.get_element_by_prompt("The 'Search' Button Next to the 'Find Places and Things to do' Searchbar", llm=model)
-        print(knopf)
         await asyncio.sleep(1.4)
         await knopf.click()
-        await asyncio.sleep(8)
-        print("Searchbar gefunden2")
+        await asyncio.sleep(4)
         uri = await page.get_url()
-    await asyncio.sleep(20)
-    await makescreen("5", page)
+
+    await asyncio.sleep(4)
     url = await page.get_url()
-    print(f"Url gefunden: {url}")
-    await asyncio.sleep(2)
-    await makescreen("6", page)
+    await asyncio.sleep(1)
     
     await browser.stop()
     await browser.kill()
@@ -172,7 +155,8 @@ async def main():
 
 
 
-asyncio.run(main())
+t = asyncio.run(main())
+print(t)
 from browser_use import Agent, BrowserSession, Tools
 from browser_use.agent.views import ActionResult
 
