@@ -1,7 +1,7 @@
 from browser_use import Browser
 import asyncio
 from browser_use import ChatOllama, BrowserSession
-
+from state import state
 import asyncio
 from playwright.async_api import async_playwright
 llm = "hf.co/unsloth/Qwen3-14B-GGUF:Q6_K"
@@ -10,7 +10,7 @@ ws_link = "ws://localhost:9222"
 
  
 import base64
-async def get_link(location):
+async def get_link(state: state):
     
     model = ChatOllama(model=llm)
     browser = Browser(headless=False, keep_alive=True, cdp_url=ws_link)
@@ -33,7 +33,7 @@ async def get_link(location):
     await erg.click()
     await asyncio.sleep(4)
 
-    await erg.fill(location)
+    await erg.fill(state["location"])
     await asyncio.sleep(4)
 
 
@@ -57,7 +57,7 @@ async def get_link(location):
     
     await browser.stop()
     await browser.kill()
-    return url
+    return {"link": url}
 
 
 

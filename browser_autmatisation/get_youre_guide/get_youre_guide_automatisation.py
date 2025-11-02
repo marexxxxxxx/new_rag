@@ -7,8 +7,9 @@ from checks import schreibe_alles, check, get_data_check, go_deeper_check, memgr
 config = RunnableConfig(recursion_limit=100)
 from dotenv import load_dotenv
 from memgraph import builder
-
+from browser_auto import get_link
 graph = StateGraph(state)
+GET_LINK_AUTOMATIC = "get_link"
 IS_EVENT= "is_event"
 JSON_FORMAT = "json_format"
 SCHREIBE = "schreibe"
@@ -21,6 +22,7 @@ DEEP_ANALYST = "deep_analyst"
 GET_YOURE_DATA_2 = "get_youre_data_2"
 NODE_CREATER = "node_creater"
 #PremierTeil
+graph.add_node(GET_LINK_AUTOMATIC, get_link)
 graph.add_node(GET_YOURE_DATA, get_youre_data)
 graph.add_node(FIST_FORMATER, formater)
 graph.add_node(IS_EVENT, event_checker)
@@ -33,8 +35,8 @@ graph.add_node(DEEP_ANALYST, deep_analyst)
 graph.add_node(GET_YOURE_DATA_2, get_youre_data)
 #MemgraphPart
 graph.add_node(NODE_CREATER, builder)
-
-graph.set_entry_point(GET_YOURE_DATA)
+graph.set_entry_point(GET_LINK_AUTOMATIC)
+graph.add_edge(GET_LINK_AUTOMATIC,GET_YOURE_DATA)
 graph.add_edge(GET_YOURE_DATA, FIST_FORMATER)
 graph.add_conditional_edges(FIST_FORMATER,get_data_check, {0: IS_EVENT, 1: GET_YOURE_DATA})
 graph.add_conditional_edges(IS_EVENT, check, {0:JSON_FORMAT,1:IS_EVENT,2: GET_DEEP_LINK}) #go_deeper wird nicht mehr exestieren
@@ -50,7 +52,8 @@ app = graph.compile()
 
 
 b = app.invoke({
-    "link": "https://www.getyourguide.com/fuerteventura-l419/",
+    "location": "Berlin",
+    "link": "",
     "counter": 0, 
     "current_obj": "", 
     "ergebnisse": [], 

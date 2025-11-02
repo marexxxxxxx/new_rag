@@ -8,28 +8,31 @@ from langchain_ollama import OllamaEmbeddings
 
 embedder = OllamaEmbeddings(model="hf.co/leliuga/all-MiniLM-L6-v2-GGUF:F16")
 
-Settings.embed_model=embedder
-Settings.llm=None
 
-username = ""
-password = ""
-
-url = "bolt://localhost:7687"
-
-graph_store = MemgraphPropertyGraphStore(
-    username=username,
-    password=password,
-    url=url
-)
-
-PropertyGraphIndex.from_existing(
-    property_graph_store=graph_store,
-
-)
 
 
 #EntityNode
 def event_node(name, rating_average,rating_count,price_value,price_currency,price_unit,duration_min_hours,url,highlights,full_description,includes,meeting_point):
+    Settings.embed_model=embedder
+    Settings.llm=None
+
+    username = ""
+    password = ""
+
+    url = "bolt://localhost:7687"
+
+    graph_store = MemgraphPropertyGraphStore(
+        username=username,
+        password=password,
+        url=url
+    )
+
+    PropertyGraphIndex.from_existing(
+        property_graph_store=graph_store,
+
+    )
+    
+    
     event_node = EntityNode(
         name=name,
         label="event",
@@ -52,7 +55,7 @@ def event_node(name, rating_average,rating_count,price_value,price_currency,pric
 
     embeddings_description = embedder.embed_query(str(full_description['full_description']))
     embedding = ChunkNode(
-        label=name
+        label=name,
         text=str(full_description['full_description']),
         embedding=embeddings_description,
         meta_data={}
@@ -77,6 +80,3 @@ def builder(state:state):
     return {"result_list":new_ergebnisse}
 
 
-
-result = graph_store.structured_query("MATCH (n: embedding) RETURN n")
-print(result)

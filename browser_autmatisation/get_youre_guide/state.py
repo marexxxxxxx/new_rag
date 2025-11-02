@@ -5,6 +5,7 @@ from beispiel import test
 
 class state(TypedDict):
     #PremierTeil
+    location: Annotated[str, "The name of the Destination"]
     current_obj: Annotated[str,"Object with the current event."]
     ergebnisse: Annotated[list, "Object with all of the events"] # D
     list_with_text: Annotated[list, "List with the text"]
