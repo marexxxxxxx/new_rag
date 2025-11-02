@@ -7,6 +7,7 @@ from checks import schreibe_alles, check, get_data_check, go_deeper_check, memgr
 config = RunnableConfig(recursion_limit=100)
 from dotenv import load_dotenv
 from memgraph import builder
+from browser_auto import get_link_asycn
 
 graph = StateGraph(state)
 IS_EVENT= "is_event"
@@ -20,7 +21,10 @@ EXCTRACTOR_FOR_DEEP_ANALYST = "extracter_for_deep_analyst"
 DEEP_ANALYST = "deep_analyst"
 GET_YOURE_DATA_2 = "get_youre_data_2"
 NODE_CREATER = "node_creater"
+
+GET_LINK_ASYNC = "get_link_asycn"
 #PremierTeil
+graph.add_node(GET_LINK_ASYNC, get_link_asycn)
 graph.add_node(GET_YOURE_DATA, get_youre_data)
 graph.add_node(FIST_FORMATER, formater)
 graph.add_node(IS_EVENT, event_checker)
@@ -34,7 +38,8 @@ graph.add_node(GET_YOURE_DATA_2, get_youre_data)
 #MemgraphPart
 graph.add_node(NODE_CREATER, builder)
 
-graph.set_entry_point(GET_YOURE_DATA)
+graph.set_entry_point(GET_LINK_ASYNC)
+graph.add_edge(GET_LINK_ASYNC,GET_YOURE_DATA)
 graph.add_edge(GET_YOURE_DATA, FIST_FORMATER)
 graph.add_conditional_edges(FIST_FORMATER,get_data_check, {0: IS_EVENT, 1: GET_YOURE_DATA})
 graph.add_conditional_edges(IS_EVENT, check, {0:JSON_FORMAT,1:IS_EVENT,2: GET_DEEP_LINK}) #go_deeper wird nicht mehr exestieren
@@ -45,19 +50,19 @@ graph.add_conditional_edges(DEEP_ANALYST, go_deeper_check, {0: GET_DEEP_LINK, 1:
 graph.add_conditional_edges(NODE_CREATER, memgraph_check, {1: NODE_CREATER, 2: END})
 
 
+def create_data_base(link):
+    app = graph.compile()
 
-app = graph.compile()
 
-
-b = app.invoke({
-    "link": "https://www.getyourguide.com/fuerteventura-l419/",
-    "counter": 0, 
-    "current_obj": "", 
-    "ergebnisse": [], 
-    "list_with_text": "",
-    "test": "",
-    "structured_obj": [],
-    "advanced_current_obj": None,
-    "result_list" :[]
-},{"recursion_limit":10000000})
+    b = app.invoke({
+        "link": link,
+        "counter": 0, 
+        "current_obj": "", 
+        "ergebnisse": [], 
+        "list_with_text": "",
+        "test": "",
+        "structured_obj": [],
+        "advanced_current_obj": None,
+        "result_list" :[]
+    },{"recursion_limit":10000000})
 

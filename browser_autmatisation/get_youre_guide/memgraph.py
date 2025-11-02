@@ -79,5 +79,4 @@ def builder(state:state):
 
 
 
-result = graph_store.structured_query("MATCH (n: embedding) RETURN n")
-print(result)
+#result = graph_store.structured_query("MATCH (n: embedding) RETURN n")

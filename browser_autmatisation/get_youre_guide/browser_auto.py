@@ -75,4 +75,8 @@ async def main():
         print(title)
     current_page = await browser.get_current_page()
 
-#asyncio.run(main())
+from state import state
+def get_link_asycn(location):# Diese Funktion wird genutz um das ganze async zu machen
+    link = asyncio.run(get_link_basic(location))
+    return link
+    
