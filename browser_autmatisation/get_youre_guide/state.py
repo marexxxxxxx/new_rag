@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import Union, Annotated, Optional, TypedDict
 from langgraph.graph import StateGraph
-from beispiel import test
 
 class state(TypedDict):
     #PremierTeil

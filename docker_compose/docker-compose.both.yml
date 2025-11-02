@@ -1,0 +1,43 @@
+services:
+
+  # 2. Ihre bestehenden Services
+  browser_kernel:
+    image: kernel_browser
+    ports:
+      - "443:443"
+      - "7331:7331"
+      - "9222:9222"
+      - "10001:10001"
+    cap_add:
+      - SYS_ADMIN
+    networks:
+      - network1
+
+  memgraph:
+    image: memgraph/memgraph-mage:latest
+    container_name: memgraph-mage
+    ports:
+      - "7687:7687"
+      - "7444:7444"
+    command: ["--log-level=TRACE"]
+    networks:
+      - network1
+ 
+  lab:
+    image: memgraph/lab:latest
+    container_name: memgraph-lab
+    ports:
+      - "3000:3000"
+    depends_on:
+      - memgraph
+    environment:
+      - QUICK_CONNECT_MG_HOST=memgraph
+      - QUICK_CONNECT_MG_PORT=7687
+    networks:
+      - network1
+
+# 3. Die Netzwerkdefinition
+networks:
+  network1:
+    name: allezusammen
+    external: true
