@@ -1,12 +1,17 @@
 from browser_use import Browser
 import asyncio
 from browser_use import ChatOllama, BrowserSession
-
+import docker
 import asyncio
 from playwright.async_api import async_playwright
 llm = "hf.co/unsloth/Qwen3-14B-GGUF:Q6_K"
 
 ws_link = "ws://127.0.0.1:9222"
+
+def create_docker_container():
+    client = docker.from_env()
+    global container 
+    container = client.containers.run("kernel_browser", detach=True,ports={"443":"443", "7331":"7331","9222":"9222", "10001":"10001"})     
 
 async def makeschreen(counter):
     cdp_endpoint=ws_link
@@ -177,3 +182,5 @@ async def get_link_asycn(location):# Diese Funktion wird genutz um das ganze asy
     link = await get_link_basic(location)
     return link
     
+
+create_docker_container()
