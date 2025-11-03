@@ -7,8 +7,9 @@ from scraper import get_youre_data
 from scraper import splitting_events, splitt_and_cut
 is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000)
 json_format_model   = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, num_predict=1500)
+from geopy.geocoders import Nominatim
 
-
+geolocator = Nominatim(user_agent="marec.shopping@gmail.com")
 
 
 
@@ -131,12 +132,20 @@ def deep_analyst(state:state):#
     
     if 'meeting_point' not in ergebnisse:
         ergebnisse['meeting_point'] = meeting_point(coordianten={0}, location="Keine ANgeaben im Text")
+
     if 'highlights' not in ergebnisse:
         ergebnisse['highlights'] = highlights(highlights=["War nicht in den Daten enthalten"])
     if 'full_description' not in ergebnisse:
         ergebnisse['full_description'] = full_description(full_description="War nicht in den Daten")
     if 'includes' not in ergebnisse:
         ergebnisse["includes"] = includes(what_to_bring=["War nicht in den Daten Enthalten"], not_good=["War nicht in den Daten Enthalten"], know_bevor_go=["War nicht in den Daten Enthalten"])
+    
+
+
+    location = geolocator.geocode(meeting_point.location)
+    if location:
+        ergebnisse["meeting_point"] = meeting_point(coordianten={location.latitude, location.longitude}, location=ergebnisse["meeting_point"].location) #vlt Coordinaten Fromat Falschherum
+
     obj = Advanced(
     highlights=ergebnisse['highlights'],
     full_description=ergebnisse['full_description'],

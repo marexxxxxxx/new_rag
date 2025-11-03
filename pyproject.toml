@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "browser-use>=0.9.4",
+    "docker>=7.1.0",
+    "geopy>=2.4.1",
     "kernel>=0.17.0",
     "langchain-community>=0.4.1",
     "langchain-ollama>=1.0.0",
