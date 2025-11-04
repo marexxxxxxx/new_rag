@@ -10,8 +10,62 @@ ws_link = "ws://127.0.0.1:9222"
 
 def create_docker_container():
     client = docker.from_env()
-    global container 
-    container = client.containers.run("kernel_browser", detach=True,ports={"443":"443", "7331":"7331","9222":"9222", "10001":"10001"})     
+    global container
+    
+    # 💡 ANPASSUNGEN HIER:
+    # 1. security_opt={"seccomp": "unconfined"} lockert die Linux-Sicherheitsfilter (Seccomp),
+    #    wodurch die Namespace-Operationen, die Chromium benötigt, erlaubt werden.
+    # 2. shm_size="2g" (oder "1g") erhöht den Shared Memory, was oft notwendig ist,
+    #    wenn Chromium/Chrome in Containern läuft (ersetzt das Flag --disable-dev-shm-usage).
+    
+    container = client.containers.run(
+        "kernel_browser",
+        detach=True,
+        ports={"443":"443", "7331":"7331","9222":"9222", "10001":"10001"},
+        security_opt=["seccomp:unconfined"], # Behebt den "Operation not permitted" Fehler
+        shm_size='2g'                       # Verbessert die Stabilität von Chromium im Container
+    )     
+    
+    # Der Log-Loop bleibt unverändert
+    print(f"Container '{container.short_id}' gestartet. Warte auf Logs...")
+    for log in container.logs(stream=True):
+        # Das Log wird als 'bytes' (b'...') empfangen, daher decodieren wir es.
+        try:
+            print(log.decode('utf-8').strip())
+        except UnicodeDecodeError:
+            print(log) # Fallback für nicht dekodierbare Bytes
+
+
+
+def close_docker_container(timeout=10):
+    """
+    Stoppt und entfernt den globalen Docker-Container.
+    """
+    global container
+    
+    if container:
+        print(f"Versuche, Container '{container.short_id}' zu stoppen...")
+        
+        try:
+            # 1. Stoppen des Containers
+            # timeout: Wartezeit (in Sekunden), bevor Docker ein SIGKILL sendet
+            container.stop(timeout=timeout)
+            print(f"Container '{container.short_id}' erfolgreich gestoppt.")
+            
+            # 2. Entfernen des Containers (optional, aber empfohlen, um Ressourcen freizugeben)
+            container.remove()
+            print(f"Container '{container.short_id}' entfernt.")
+            
+        except docker.errors.NotFound:
+            print("Fehler: Container wurde nicht gefunden. Wahrscheinlich schon gestoppt/entfernt.")
+        except docker.errors.APIError as e:
+            print(f"Fehler beim Stoppen/Entfernen des Containers: {e}")
+            
+        finally:
+            # Setze die globale Variable zurück
+            container = None
+    else:
+        print("Kein aktiver Container zum Stoppen gefunden.")
 
 async def makeschreen(counter):
     cdp_endpoint=ws_link
@@ -179,8 +233,10 @@ from browser_use.agent.views import ActionResult
 
 from state import state
 async def get_link_asycn(location):# Diese Funktion wird genutz um das ganze async zu machen
+    create_docker_container()
     link = await get_link_basic(location)
+    close_docker_container()
     return link
     
 
-create_docker_container()
+#create_docker_container()
