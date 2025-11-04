@@ -1,25 +1,31 @@
-from fastapi import FastApi
+from fastapi import FastAPI
 from browser_auto import get_link_asycn
 from get_youre_guide_automatisation import create_data_base
 from memgraph import returner
 from geopy.geocoders import Nominatim
-app = FastApi()
+from fastapi.concurrency import run_in_threadpool
+from get_youre_guide_automatisation import create_data_base
+
+app = FastAPI()
 
 geolocator = Nominatim(user_agent="marec.shopping@gmail.com")
 coords = {}
-from fastapi.concurrency import run_in_threadpool
-from get_youre_guide_automatisation import create_data_base
-app = FastAPI()
-db = asyncio.Lock()
+import asyncio
+
+
+requestlock = asyncio.Lock()
 
 @app.get("/location/{location}")
 async def get_informations(location):
-    print(location)
-    print("\n \n \n \n \n")
-    link = await get_link_asycn(location)
-    async with db:
-        await run_in_threadpool(create_data_base, link)
-    return {"answer":"fertig"}
+    if requestlock.locked():
+        # falls du lieber abbrechen willst statt warten:
+        raise Exception("Automation is already running")
+    async with requestlock:
+        print(location)
+        print("\n \n \n \n \n")
+        link = await get_link_asycn(location)
+        await create_data_base(link)
+        return {"answer":"fertig"}
 
 
 

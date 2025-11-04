@@ -6,7 +6,6 @@ from llama_index.core.graph_stores.types import EntityNode, ChunkNode, Relation
 from state import state
 from langchain_ollama import OllamaEmbeddings
 
-def normal_lookup
 
 def llama_indexer_connect():
     global graph_store, embedder

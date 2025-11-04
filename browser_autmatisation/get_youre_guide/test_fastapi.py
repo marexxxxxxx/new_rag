@@ -1,4 +1,4 @@
-from fastapi import FastApi
+from fastapi import FastAPI
 from browser_auto import get_link_asycn
 from get_youre_guide_automatisation import create_data_base
 from memgraph import returner

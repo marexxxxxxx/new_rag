@@ -50,11 +50,15 @@ graph.add_conditional_edges(DEEP_ANALYST, go_deeper_check, {0: GET_DEEP_LINK, 1:
 graph.add_conditional_edges(NODE_CREATER, memgraph_check, {1: NODE_CREATER, 2: END})
 
 
-def create_data_base(link):
-    app = graph.compile()
+
+app = graph.compile()
 
 
-    b = app.invoke({
+
+
+
+async def create_data_base(link):
+    init = {
         "link": link,
         "counter": 0, 
         "current_obj": "", 
@@ -64,5 +68,6 @@ def create_data_base(link):
         "structured_obj": [],
         "advanced_current_obj": None,
         "result_list" :[]
-    },{"recursion_limit":10000000})
-
+    }
+    conf = {"recursion_limit":10000000}
+    await app.ainvoke(init, config=conf)
