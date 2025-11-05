@@ -76,7 +76,7 @@ def builder(state:state):
     new_ergebnisse.pop(0)
     basic, advanced = get_current_node.ActivityListing, get_current_node.Advanced
     event_node(**basic.dict(), **advanced.dict())
-    get_current_node.close()
+    #get_current_node.close() ##irgendwas stimmt damitnicht muss ünerarbeitet werden
     return {"result_list":new_ergebnisse}
 
 

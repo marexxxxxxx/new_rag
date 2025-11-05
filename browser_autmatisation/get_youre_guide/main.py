@@ -11,15 +11,15 @@ app = FastAPI()
 geolocator = Nominatim(user_agent="marec.shopping@gmail.com")
 coords = {}
 import asyncio
-
-
+import uvicorn
+get_youre_link = ""
 requestlock = asyncio.Lock()
 
 @app.get("/location/{location}")
 async def get_informations(location):
     if requestlock.locked():
         # falls du lieber abbrechen willst statt warten:
-        raise Exception("Automation is already running")
+        print("No")
     async with requestlock:
         print(location)
         print("\n \n \n \n \n")
@@ -41,3 +41,5 @@ async def check_for_informations(location):
 async def return_information(location: str, range:float):
     erg = returner(location, range)
     None
+
+

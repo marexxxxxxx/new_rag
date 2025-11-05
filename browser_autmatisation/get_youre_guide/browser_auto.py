@@ -141,7 +141,7 @@ async def get_link_basic(location):
     pages = await browser.get_pages()
     print(pages)
     print("t")
-    await asyncio.sleep(2)
+    await asyncio.sleep(5)
 
     current_page = await browser.get_current_page()
     
@@ -156,21 +156,25 @@ async def get_link_basic(location):
         llm=model  # ← DAS IST DER FEHLENDE PARAMETER!
     )
     print("Element gefunden:", erg)
-    
+    await asyncio.sleep(5)
     # ✓ RICHTIG: await bei fill()
     await erg.click()
-    await asyncio.sleep(4)
+    await asyncio.sleep(7)
     await erg.fill(location)
     print("Text eingegeben")
     
-    await asyncio.sleep(4)
+    await asyncio.sleep(9)
     knopf = await page.must_get_element_by_prompt("The 'Search' Button Next to the 'Find Places and Things to do' Searchbar", llm=model)
     print("Searchbar gefunden")
-    await asyncio.sleep(4)
+    await asyncio.sleep(8)
     await knopf.click()
-    await asyncio.sleep(7)
+    await asyncio.sleep(9)
     url = await page.get_url()
     print(f"Url gefunden: {url}")
+    for context in playwright_browser.contexts:
+        for page in context.pages:
+            page_url = page.url
+            print(f"  Prüfe Tab: {page_url}")
     await browser.stop()
 
     return url
@@ -197,10 +201,13 @@ async def get_link_asycn(location):# Diese Funktion wird genutz um das ganze asy
         link = await get_link_basic(location)
         await asyncio.to_thread(close_docker_container)
         return link
+    
     except Exception as e:
         print(f"Der Fehler war: {e}")
         await asyncio.to_thread(close_docker_container)
+        return link
     finally :
         await asyncio.to_thread(close_docker_container)
 
 
+asyncio.run(get_link_asycn("freiburg"))

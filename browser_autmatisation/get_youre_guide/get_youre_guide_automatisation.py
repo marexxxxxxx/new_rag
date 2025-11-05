@@ -22,9 +22,7 @@ DEEP_ANALYST = "deep_analyst"
 GET_YOURE_DATA_2 = "get_youre_data_2"
 NODE_CREATER = "node_creater"
 
-GET_LINK_ASYNC = "get_link_asycn"
 #PremierTeil
-graph.add_node(GET_LINK_ASYNC, get_link_asycn)
 graph.add_node(GET_YOURE_DATA, get_youre_data)
 graph.add_node(FIST_FORMATER, formater)
 graph.add_node(IS_EVENT, event_checker)
@@ -38,8 +36,7 @@ graph.add_node(GET_YOURE_DATA_2, get_youre_data)
 #MemgraphPart
 graph.add_node(NODE_CREATER, builder)
 
-graph.set_entry_point(GET_LINK_ASYNC)
-graph.add_edge(GET_LINK_ASYNC,GET_YOURE_DATA)
+graph.set_entry_point(GET_YOURE_DATA)
 graph.add_edge(GET_YOURE_DATA, FIST_FORMATER)
 graph.add_conditional_edges(FIST_FORMATER,get_data_check, {0: IS_EVENT, 1: GET_YOURE_DATA})
 graph.add_conditional_edges(IS_EVENT, check, {0:JSON_FORMAT,1:IS_EVENT,2: GET_DEEP_LINK}) #go_deeper wird nicht mehr exestieren
@@ -55,7 +52,7 @@ app = graph.compile()
 
 
 
-
+import asyncio
 
 async def create_data_base(link):
     init = {
@@ -71,3 +68,4 @@ async def create_data_base(link):
     }
     conf = {"recursion_limit":10000000}
     await app.ainvoke(init, config=conf)
+

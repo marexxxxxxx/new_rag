@@ -142,7 +142,7 @@ def deep_analyst(state:state):#
     
 
 
-    location = geolocator.geocode(meeting_point.location)
+    location = geolocator.geocode(ergebnisse['meeting_point'].location)
     if location:
         ergebnisse["meeting_point"] = meeting_point(coordianten={location.latitude, location.longitude}, location=ergebnisse["meeting_point"].location) #vlt Coordinaten Fromat Falschherum
 
