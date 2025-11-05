@@ -41,3 +41,11 @@ def memgraph_check(state:state):
         return 1
     else:
         raise Exception("Unkown state of Ergebnis")
+
+def check_if_link(state:state): #dafür zuständig zu überprüfen ob da ein Link drinne ist. falls nicht wird das näcshte Objekt genutzt
+    if state["link"] == "":
+        return 0
+    if state["link"] != "":
+        return 1
+    else:
+        raise Exception("Fehler bei get_deep_link")

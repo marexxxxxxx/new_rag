@@ -59,50 +59,91 @@ def close_docker_container(timeout=10):
         print("Kein aktiver Container zum Stoppen gefunden.")
 
 
-async def wait_for_navigation(page, timeout=30):
+async def verify_click_success(element, element_description, timeout=2):
     """
-    Wartet darauf, dass eine Navigation abgeschlossen ist.
-    Prüft, ob sich die URL geändert hat und ob die Seite geladen ist.
+    Überprüft, ob ein Klick erfolgreich war durch Warten und Statuscheck.
     """
-    start_url = await page.get_url()
-    start_time = asyncio.get_event_loop().time()
+    try:
+        await asyncio.sleep(timeout)
+        print(f"✓ Klick auf '{element_description}' scheint erfolgreich")
+        return True
+    except Exception as e:
+        print(f"✗ Klick auf '{element_description}' möglicherweise fehlgeschlagen: {e}")
+        return False
+
+
+async def wait_for_url_change(initial_url, page, timeout=30, check_interval=0.5, min_stable_time=2):
+    """
+    Wartet darauf, dass sich die URL ändert und stabil bleibt.
     
-    while True:
-        current_url = await page.get_url()
-        elapsed = asyncio.get_event_loop().time() - start_time
-        
-        # Prüfe ob sich die URL geändert hat
-        if current_url != start_url:
-            print(f"✓ URL hat sich geändert: {current_url}")
-            # Gib der Seite noch etwas Zeit zum vollständigen Laden
-            await asyncio.sleep(2)
-            return True
-        
-        if elapsed > timeout:
-            print(f"⚠ Timeout: Navigation nicht erkannt nach {timeout}s")
-            return False
-        
-        await asyncio.sleep(0.5)
-
-
-async def wait_for_url_change(initial_url, page, timeout=30, check_interval=0.5):
-    """
-    Wartet darauf, dass sich die URL ändert (robuster als wait_for_navigation).
+    Args:
+        initial_url: Die Ausgangs-URL
+        page: Das Browser-Page-Objekt
+        timeout: Maximale Wartezeit in Sekunden
+        check_interval: Wie oft die URL geprüft wird
+        min_stable_time: Wie lange die neue URL stabil sein muss
+    
+    Returns:
+        Die neue URL oder die aktuelle URL bei Timeout
     """
     elapsed = 0
+    stable_url = None
+    stable_since = 0
+    
     while elapsed < timeout:
         current_url = await page.get_url()
+        
+        # URL hat sich geändert
         if current_url != initial_url:
-            print(f"✓ URL geändert von {initial_url} zu {current_url}")
-            # Zusätzliche Wartezeit für vollständiges Page-Loading
-            await asyncio.sleep(3)
-            return current_url
+            # Prüfe ob URL stabil bleibt
+            if stable_url == current_url:
+                stable_since += check_interval
+                if stable_since >= min_stable_time:
+                    print(f"✓ URL stabil geändert von {initial_url}")
+                    print(f"  zu {current_url}")
+                    return current_url
+            else:
+                # Neue URL, starte Stabilitätszähler neu
+                stable_url = current_url
+                stable_since = 0
+                print(f"→ URL geändert zu: {current_url} (warte auf Stabilität...)")
         
         await asyncio.sleep(check_interval)
         elapsed += check_interval
     
-    print(f"⚠ Timeout: URL hat sich nicht geändert nach {timeout}s")
-    return await page.get_url()
+    final_url = await page.get_url()
+    if final_url != initial_url:
+        print(f"⚠ Timeout erreicht, aber URL hat sich geändert: {final_url}")
+        return final_url
+    else:
+        print(f"✗ Timeout: URL hat sich nicht geändert nach {timeout}s")
+        return final_url
+
+
+async def click_with_retry(element, element_description, max_retries=3, wait_between=2):
+    """
+    Klickt auf ein Element mit Retry-Logik.
+    """
+    for attempt in range(max_retries):
+        try:
+            print(f"Klick-Versuch {attempt + 1}/{max_retries} auf '{element_description}'...")
+            await element.click()
+            
+            # Warte kurz und prüfe ob Klick erfolgreich war
+            success = await verify_click_success(element, element_description, timeout=wait_between)
+            
+            if success:
+                print(f"✓ Element '{element_description}' erfolgreich geklickt")
+                return True
+                
+        except Exception as e:
+            print(f"✗ Klick-Versuch {attempt + 1} fehlgeschlagen: {e}")
+            if attempt < max_retries - 1:
+                print(f"  Warte {wait_between}s vor erneutem Versuch...")
+                await asyncio.sleep(wait_between)
+    
+    print(f"✗✗✗ Alle {max_retries} Klick-Versuche fehlgeschlagen für '{element_description}'")
+    return False
 
 
 async def switch_tab_with_playwright(target_url: str):
@@ -150,72 +191,105 @@ async def get_link_basic(location):
         
         # Warte auf vollständiges Laden der Seite
         await asyncio.sleep(5)
+        await makescreen("step_0_startseite", page)
         
         await connect_playwright_to_cdp(ws_link)
         await switch_tab_with_playwright("https://www.getyourguide.com")
+        await makescreen("step_1_after_playwright_connect", page)
         
         pages = await browser.get_pages()
         print(f"Anzahl offener Pages: {len(pages)}")
         
         current_page = await browser.get_current_page()
-        print(f"Aktuelle URL: {await current_page.get_url()}")
+        initial_url = await current_page.get_url()
+        print(f"Start URL: {initial_url}")
 
-        print("Suche Cookie Banner...")
+        # === Cookie Banner ===
+        print("\n=== Schritt 1: Cookie Banner ===")
         cookie_banner = await page.must_get_element_by_prompt(
             "Find the primary, highlighted confirmation button on the cookie consent banner. This button accepts all cookies and might be labeled 'I agree'.", 
             llm=model
         )
-        await cookie_banner.click()
-        await asyncio.sleep(2)
-        print("✓ Cookiebanner wurde akzeptiert.")
         
-        # Suche Suchleiste
-        erg = await page.must_get_element_by_prompt(
+        cookie_success = await click_with_retry(cookie_banner, "Cookie Banner", max_retries=2)
+        if not cookie_success:
+            print("⚠ Cookie Banner konnte nicht geklickt werden, fahre trotzdem fort...")
+        await makescreen("step_2_cookie_banner", page)
+        
+        await asyncio.sleep(2)
+        
+        # === Suchleiste ===
+        print("\n=== Schritt 2: Suchleiste finden und klicken ===")
+        searchbar = await page.must_get_element_by_prompt(
             "The Searchbar for Inserting the Location. Its called 'Find Places and Things to do'",
             llm=model
         )
         print("✓ Suchleiste gefunden")
         
+        searchbar_success = await click_with_retry(searchbar, "Suchleiste", max_retries=3)
+        if not searchbar_success:
+            raise Exception("Suchleiste konnte nicht aktiviert werden")
+        await makescreen("step_3_suchleiste_geclickt", page)
+        
         await asyncio.sleep(2)
-        await erg.click()
-        await asyncio.sleep(3)
         
-        # Text eingeben
-        await erg.fill(location)
+        # === Text eingeben ===
+        print(f"\n=== Schritt 3: Text '{location}' eingeben ===")
+        await searchbar.fill(location)
         print(f"✓ Text '{location}' eingegeben")
+        await makescreen("step_4_text_eingegeben", page)
         await asyncio.sleep(3)
         
-        # Speichere die aktuelle URL VOR dem Klick
+        # URL vor der Suche speichern
         url_before_search = await page.get_url()
         print(f"URL vor Suche: {url_before_search}")
         
-        # Suche Search-Button
-        knopf = await page.must_get_element_by_prompt(
+        # === Search Button ===
+        print("\n=== Schritt 4: Search Button finden und klicken ===")
+        search_button = await page.must_get_element_by_prompt(
             "The 'Search' Button Next to the 'Find Places and Things to do' Searchbar", 
             llm=model
         )
         print("✓ Search-Button gefunden")
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
         
-        # Klicke auf Search-Button
-        await knopf.click()
-        print("✓ Search-Button geklickt")
+        search_success = await click_with_retry(search_button, "Search Button", max_retries=3)
+        if not search_success:
+            raise Exception("Search Button konnte nicht geklickt werden")
+        await makescreen("step_5_search_button_geclickt", page)
         
-        # KRITISCH: Warte auf URL-Änderung statt fixer Zeit
-        final_url = await wait_for_url_change(url_before_search, page, timeout=30)
+        # === URL-Änderung überprüfen ===
+        print("\n=== Schritt 5: Warte auf URL-Änderung ===")
+        final_url = await wait_for_url_change(
+            url_before_search, 
+            page, 
+            timeout=30,
+            check_interval=0.5,
+            min_stable_time=2
+        )
         
-        print(f"✓✓✓ Finale URL: {final_url}")
+        await makescreen("step_6_finale_seite", page)
         
-        # Debug: Zeige alle offenen Tabs
+        # Finale Überprüfung
+        if final_url == url_before_search:
+            print("✗✗✗ FEHLER: URL hat sich nicht geändert!")
+            print(f"    Erwartet: Änderung von {url_before_search}")
+            print(f"    Erhalten: {final_url}")
+            raise Exception("Navigation fehlgeschlagen: URL unverändert")
+        else:
+            print(f"\n✓✓✓ ERFOLG! Finale URL: {final_url}")
+        
+        # Zeige alle offenen Tabs
         if playwright_browser:
+            print("\n=== Offene Tabs ===")
             for context in playwright_browser.contexts:
                 for pg in context.pages:
-                    print(f"  Offener Tab: {pg.url}")
+                    print(f"  → {pg.url}")
         
         return final_url
         
     except Exception as e:
-        print(f"❌ Fehler in get_link_basic: {e}")
+        print(f"\n✗✗✗ Fehler in get_link_basic: {e}")
         import traceback
         traceback.print_exc()
         raise
@@ -234,7 +308,7 @@ from browser_use import Agent, BrowserSession, Tools
 from browser_use.agent.views import ActionResult
 
 
-async def get_link_asycn(location):
+async def get_link_async(location):
     """
     Diese Funktion wird genutzt um das ganze async zu machen
     """
@@ -242,27 +316,25 @@ async def get_link_asycn(location):
     try:
         await asyncio.to_thread(create_docker_container)
         await asyncio.sleep(15)
-        print("✓ Container gestartet, starte Browser-Automation...")
+        print("Container gestartet, starte Browser-Automation...")
         
         link = await get_link_basic(location)
         
-        print(f"✓✓✓ Link erfolgreich abgerufen: {link}")
+        print(f"\n{'='*60}")
+        print(f"Link erfolgreich abgerufen: {link}")
+        print(f"{'='*60}\n")
         return link
     
     except Exception as e:
-        print(f"❌ Der Fehler war: {e}")
+        print(f"\n{'='*60}")
+        print(f"✗✗✗ Der Fehler war: {e}")
+        print(f"{'='*60}\n")
         import traceback
         traceback.print_exc()
         return link
     
     finally:
         await asyncio.to_thread(close_docker_container)
-        print("✓ Container gestoppt")
+        print("Container gestoppt")
 
 
-# Test
-if __name__ == "__main__":
-    result = asyncio.run(get_link_asycn("freiburg"))
-    print(f"\n{'='*50}")
-    print(f"ENDERGEBNIS: {result}")
-    print(f"{'='*50}")

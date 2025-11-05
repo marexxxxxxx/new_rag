@@ -36,17 +36,20 @@ def event_checker(state: state): #Findet herraus, was events sind, und was nicht
         return {"list_with_text":text_to_check, "current_obj": current_obj} #muss angepasst werden, current_obj wird fallen gelassen, hier wird listenartig
 
 def link_formater(erg: ActivityListing): #verändert die postion des links sp, das der .jpeg link postion 0 ist
-    links = erg.url
-    if ".jpeg" not in links[0]:
-        return erg
-    elif ".jpeg" in links[0]:
-        better_links = [links[1], links[0]]
-        erg.url = better_links
-        return erg
-    else:
-        raise Exception("Probelme bei dem Jpeg format.")
-
-
+    try:
+        links = erg.url
+        if ".jpeg" not in links[0]:
+            return erg
+        elif ".jpeg" in links[0]:
+            better_links = [links[1], links[0]]
+            erg.url = better_links
+            return erg
+        else:
+            raise Exception("Probelme bei dem Jpeg format.")
+    except Exception as e:
+        print(f"Folgender Fehler: {e}") 
+        return ""
+    
 def json_format(state:state): #erstellt das json format
     obj = state["current_obj"]
     struc = json_format_model.with_structured_output(ActivityListing)
@@ -74,6 +77,7 @@ def get_deep_link(state:state): #Das soll die Objecte also die den Markdown text
     if obj.name.lower() in ["rating rules", "company", "jobs", "work with us"]:
         return {"ergebnisse": new_version} 
     obj = link_formater(obj)
+    
     link = obj.url[0]
     state["link"] = link
 

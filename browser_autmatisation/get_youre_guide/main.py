@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from browser_auto import get_link_asycn
+from browser_auto import get_link_async
 from get_youre_guide_automatisation import create_data_base
 from memgraph import returner
 from geopy.geocoders import Nominatim
@@ -23,7 +23,7 @@ async def get_informations(location):
     async with requestlock:
         print(location)
         print("\n \n \n \n \n")
-        link = await get_link_asycn(location)
+        link = await get_link_async(location)
         await create_data_base(link)
         return {"answer":"fertig"}
 
