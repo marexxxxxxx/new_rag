@@ -69,7 +69,10 @@ async def create_data_base(link):
         "test": "",
         "structured_obj": [],
         "advanced_current_obj": None,
-        "result_list" :[]
+        "result_list" :[],
+        "obj": None,
+        "informations_to_check": None,
+        "link_and_name": None
     }
     conf = {"recursion_limit":10000000}
     await app.ainvoke(init, config=conf)

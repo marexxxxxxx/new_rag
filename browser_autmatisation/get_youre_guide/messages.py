@@ -211,13 +211,13 @@ You are an expert JSON evaluator.
 Evaluate the following JSON (schema below) from 1–10 based on clarity, completeness, and usefulness for travelers.
 
 Schema:
-{
+{{
   "highlights": str | None,
   "full_description": str | None,
   "includes": [str] | None,
   "meeting_point": [float,float] | str | None,
   "non_suitable": [str] | None
-}
+}}
 
 Scoring (1=bad, 10=excellent):
 - **Meeting Point (40%)**: must be valid coords or address. Missing/vague/nonsense → strong penalty (max 4).
@@ -233,7 +233,7 @@ General rule:
 
 Output **only**:
 ```json
-{"score": <1-10>}
-     No explanation or comments.
+{{"score": <1-10>}}
+      No explanation or comments.
 """),("human", "{Text}")
 ])

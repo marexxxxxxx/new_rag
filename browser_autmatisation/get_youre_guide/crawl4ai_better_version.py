@@ -1,6 +1,7 @@
 from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
 from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, LLMConfig
 import asyncio
+import json
 from crawl4ai.content_filter_strategy import PruningContentFilter
 import time
 from pydantic import BaseModel
@@ -77,8 +78,16 @@ Now process the given crawled content and return JSON that fits the model exactl
             url=link,
             config=crawler_config,
         )
-        erg: informations = result.extracted_content
+        data_list = json.loads(result.extracted_content)
+        
+        # Erstes Element aus der Liste nehmen
+        data = data_list[0]
+        
+        # Pydantic-Objekt erstellen
+        erg = informations(**data)
+        
         return erg
+
 
 async def try_using_fitt_website(link,Name):
     extra_args = {"temperature":0}
@@ -142,8 +151,16 @@ Now process the given crawled content and return JSON that fits the model exactl
             config=crawler_config,
         )
 
-        erg: informations = result.extracted_content
+        data_list = json.loads(result.extracted_content)
+        
+        # Erstes Element aus der Liste nehmen
+        data = data_list[0]
+        
+        # Pydantic-Objekt erstellen
+        erg = informations(**data)
+        
         return erg
+
 
 
 

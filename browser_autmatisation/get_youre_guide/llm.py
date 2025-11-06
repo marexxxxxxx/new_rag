@@ -173,10 +173,11 @@ async def get_informations_fast(state: state):
     try:
         test = await try_using_fitt_website(link=link, Name=state["advanced_current_obj"].name)
         erg: informations = test
-    except:
+    except Exception as e:
         None
-        print("HEy")
+        print(f"HEy {e}")
         #erg = None
+        return {"link_and_name":[link,state["advanced_current_obj"].name]} 
 
     obj = informations(
         highlights=erg.highlights,
@@ -188,13 +189,13 @@ async def get_informations_fast(state: state):
     einf = state["advanced_current_obj"]
     ende = ActivityListing_advanced(ActivityListing=einf, informations=obj)
     
-    return {"advanced_current_obj": None, } 
+    return {"obj": ende,"informations_to_check":erg, "link_and_name":[link,state["advanced_current_obj"].name]} 
     
 
 def get_information_whole_page(state: state):
     link = state["link"]
     try:
-        erg: informations  = try_using_wohle_website(link=link, Name=state["advanced_current_obj"].name)
+        erg: informations  = try_using_wohle_website(link=state["link_and_name"][0], Name=state["link_and_name"][1])
     except:
         erg = None
 
@@ -207,14 +208,16 @@ def get_information_whole_page(state: state):
     )
     einf = state["advanced_current_obj"]
     ende = ActivityListing_advanced(ActivityListing=einf, informations=obj)
-
-    return {"obj": ende,"informations_to_check":erg, "link_and_name":[link,state["advanced_current_obj"].name]} 
+    letzte_liste = state["result_list"]
+    letzte_liste.append(state["obj"])
+    state["result_list"] = letzte_liste
+    return {"letzte_liste": letzte_liste} 
 
 
 def is_information_good(state:state):
     struc = look_if_good.with_structured_output(bewertung)
     erg = struc.invoke(is_inforamtion_good_prompt.invoke({"Text":state["informations_to_check"]}))
-    if erg >= 6:
+    if erg.points >= 6:
 
         letzte_liste = state["result_list"]
         letzte_liste.append(state["obj"])
