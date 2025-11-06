@@ -1,14 +1,16 @@
+import asyncio
 from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import MessagesPlaceholder
-from state import state, isevent, ActivityListing, ActivityListing_advanced, Advanced, has_more_info, highlights, meeting_point, full_description, includes
-from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt, deep_extracter, deep_full_descriptin_extractor, deep_highlight_extractor, deep_meeting_point_extractor, deep_includes_extractor
+from state import state, isevent, ActivityListing, ActivityListing_advanced, informations, bewertung
+from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt, deep_extracter, deep_full_descriptin_extractor, deep_highlight_extractor, deep_meeting_point_extractor, deep_includes_extractor,is_inforamtion_good_prompt
 from scraper import get_youre_data
 from scraper import splitting_events, splitt_and_cut
-is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000)
-json_format_model   = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, num_predict=1500)
+is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0",temperature=0.1, num_predict=1000)
+json_format_model = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, num_predict=1500)
+look_if_good = ChatOllama(model="hf.co/unsloth/Qwen3-14B-GGUF:Q6_K", temperature=0.1, num_predict=1500)
 from geopy.geocoders import Nominatim
-
+from crawl4ai_better_version import try_using_fitt_website, try_using_wohle_website
 geolocator = Nominatim(user_agent="marec.shopping@gmail.com")
 
 
@@ -163,3 +165,60 @@ def deep_analyst(state:state):#
     return {"advanced_current_obj": None, "result_liste": letzte_liste}
     
         
+
+
+
+async def get_informations_fast(state: state):
+    link = state["link"]
+    try:
+        test = try_using_fitt_website(link=link, Name=state["advanced_current_obj"].name)
+        erg: informations = test
+    except:
+        None
+        print("HEy")
+        #erg = None
+
+    obj = informations(
+        highlights=erg["highlights"],
+        full_description=erg.full_description,
+        includes=erg.includes,
+        meeting_point=erg.meeting_point,
+        non_suitable=erg.non_suitable
+    )
+    einf = state["advanced_current_obj"]
+    ende = ActivityListing_advanced(ActivityListing=einf, informations=obj)
+    
+    return {"advanced_current_obj": None, } 
+    
+
+def get_information_whole_page(state: state):
+    link = state["link"]
+    try:
+        erg: informations  = try_using_wohle_website(link=link, Name=state["advanced_current_obj"].name)
+    except:
+        erg = None
+
+    obj = informations(
+        highlights=erg.highlights,
+        full_description=erg.full_description,
+        includes=erg.includes,
+        meeting_point=erg.meeting_point,
+        non_suitable=erg.non_suitable
+    )
+    einf = state["advanced_current_obj"]
+    ende = ActivityListing_advanced(ActivityListing=einf, informations=obj)
+
+    return {"obj": ende,"informations_to_check":erg, "link_and_name":[link,state["advanced_current_obj"].name]} 
+
+
+def is_information_good(state:state):
+    struc = look_if_good.with_structured_output(bewertung)
+    erg = struc.invoke(is_inforamtion_good_prompt.invoke({"Text":state["informations_to_check"]}))
+    if erg >= 6:
+
+        letzte_liste = state["result_list"]
+        letzte_liste.append(state["obj"])
+        state["result_list"] = letzte_liste
+        return 0
+    else:
+        return 1

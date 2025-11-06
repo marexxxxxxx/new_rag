@@ -2,20 +2,12 @@ from pydantic import BaseModel
 from typing import Union, Annotated, Optional, TypedDict
 from langgraph.graph import StateGraph
 
-class state(TypedDict):
-    #PremierTeil
-    current_obj: Annotated[str,"Object with the current event."]
-    ergebnisse: Annotated[list, "Object with all of the events"] # D
-    list_with_text: Annotated[list, "List with the text"]
-    link: Annotated[list[str], "The list with the links to check"]
-    #SecoundarTeil
-    advanced_current_obj: Annotated[..., "The current Object to get a detailed extract from"]
-    result_list: Annotated[list, "List with the final objects"]
-
-class isevent(BaseModel):
-    is_event: Annotated[bool,"Is the given text a event"]
-class has_more_info(BaseModel):
-    has_more: Annotated[bool,"Has more infos."]
+class informations(BaseModel):
+    highlights: Annotated[Union[str, None], "Highlights of the Trip. No Reviews"]
+    full_description: Annotated[Union[str, None], "Full description of the Event"]
+    includes: Annotated[Union[list[str], None],"What is included in the trip"]
+    meeting_point: Annotated[Union[list[float,float], str, None],"THe Coordinates, the address, or None if nothing provided"]
+    non_suitable: Annotated[Union[list[str],None],"Non suitable informations"]
 
 class ActivityListing(BaseModel):
     """
@@ -33,31 +25,35 @@ class ActivityListing(BaseModel):
 
 
 
-
-
-
-class highlights(BaseModel):
-    highlights: Annotated[list[str], "A list of the Highlights"]
-
-class meeting_point(BaseModel):
-    coordianten: Annotated[Union[None, list[float,float]],"The coordinates of the meeting point"]
-    location: Annotated[Union[None, str], "House number, street, town, country"]
-
-class full_description(BaseModel):
-    full_description: Annotated[str, "The whole description"]
-
-class includes(BaseModel):
-    """Essential information and preparation notes for a travel experience."""
-    what_to_bring: Annotated[list[str], "Items the participant must bring or would be beneficial to have (e.g., water, camera, suitable clothing)."]
-    not_good: Annotated[list[str], "Items or behaviors that are strictly forbidden, not suitable, or strongly advised against (e.g., large bags, pets, inappropriate attire)."]
-    know_bevor_go: Annotated[list[str], "Crucial organizational or physical notes that do not fit the other categories (e.g., duration, accessibility, check-in details, language)."]
-
-class Advanced(BaseModel):
-    highlights: highlights
-    full_description: full_description
-    includes: includes
-    meeting_point: meeting_point
-
 class ActivityListing_advanced(BaseModel):
     ActivityListing: ActivityListing
-    Advanced: Advanced
+    informations: informations
+
+
+    
+class state(TypedDict):
+    #PremierTeil
+    current_obj: Annotated[str,"Object with the current event."]
+    ergebnisse: Annotated[list, "Object with all of the events"] # D
+    list_with_text: Annotated[list, "List with the text"]
+    link: Annotated[list[str], "The list with the links to check"]
+    #SecoundarTeil
+    advanced_current_obj: Annotated[..., "The current Object to get a detailed extract from"]
+    result_list: Annotated[list, "List with the final objects"]
+
+    #Crawl4ai_infors
+    obj: Annotated[ActivityListing_advanced,"The Object to add if true"]
+    informations_to_check: Annotated[informations,"Should be a good ans suiting Model otherwise should it be renewed"]
+    link_and_name: Annotated[list[str], "The Informations if its not good to make a new searchquery"]
+
+class isevent(BaseModel):
+    is_event: Annotated[bool,"Is the given text a event"]
+class has_more_info(BaseModel):
+    has_more: Annotated[bool,"Has more infos."]
+
+
+
+
+class bewertung(BaseModel):
+    points: Annotated[float, "The number of points the object become"]
+    

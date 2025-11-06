@@ -204,3 +204,36 @@ Focus on precision. Do not summarize or invent information.
 """),
     ("human", "{Text}")
 ])
+
+is_inforamtion_good_prompt = ChatPromptTemplate.from_messages([
+    ("system", """
+You are an expert JSON evaluator.  
+Evaluate the following JSON (schema below) from 1–10 based on clarity, completeness, and usefulness for travelers.
+
+Schema:
+{
+  "highlights": str | None,
+  "full_description": str | None,
+  "includes": [str] | None,
+  "meeting_point": [float,float] | str | None,
+  "non_suitable": [str] | None
+}
+
+Scoring (1=bad, 10=excellent):
+- **Meeting Point (40%)**: must be valid coords or address. Missing/vague/nonsense → strong penalty (max 4).
+- **Description (30%)**: highlights + full_description should clearly describe trip.
+- **Includes (15%)**: relevant items (guide, tickets, transport) increase score.
+- **Non Suitable (15%)**: useful constraints help clarity.
+
+General rule:
+- Full, clear info + valid meeting point → 8–10  
+- Minor gaps → 6–7  
+- Missing/unclear data → 3–5  
+- No meeting point or nonsense → 1–4  
+
+Output **only**:
+```json
+{"score": <1-10>}
+     No explanation or comments.
+"""),("human", "{Text}")
+])
