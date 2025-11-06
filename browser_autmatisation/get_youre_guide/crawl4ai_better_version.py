@@ -30,12 +30,15 @@ async def focus_on_elements():
     
 async def try_using_wohle_website(link,Name):
     extra_args = {"temperature":0}
+    content = ["div#row-highlights-point-header-content.row.container", "div#row-full-description-header-content.row.container","div#row-inclusions-header-content.row.container","div#row-meeting-points-header-content.row.container","div#row-important-information-header-content.row.container"]
     crawler_config = CrawlerRunConfig(
+        target_elements=content,
         word_count_threshold=1,
         extraction_strategy=LLMExtractionStrategy(
             llm_config=LLMConfig(provider=llm),
             schema=informations.model_json_schema(),
             extraction_type="schemah",
+            input_format="fit_markdown",
             instruction=f"""
 From the crawled content, extract all information related to "{Name}".  
 Ignore reviews and unrelated content.
@@ -84,8 +87,10 @@ Now process the given crawled content and return JSON that fits the model exactl
     async with AsyncWebCrawler() as crawler:
         result = await crawler.arun(
             url=link,
-            config=crawler_config
+            config=crawler_config,
         )
+        print("\n \n \n \n \n \n \n \n")
+        print(result.markdown.fit_markdown)
         print(result.extracted_content)
 
 
@@ -104,7 +109,7 @@ async def llm_based_extraction():
 
 
 
-async def fit_markdown():
+async def fit_markdown(link):
     pruning_filter = PruningContentFilter(
         threshold=0.40,
         threshold_type="dynamic",
@@ -118,7 +123,7 @@ async def fit_markdown():
 
     async with AsyncWebCrawler() as crawler:
         result = await crawler.arun(
-            url="https://www.getyourguide.de/fuerteventura-l419/fuerteventura-tour-verkostung-im-weingut-conatvs-t411071/?ranking_uuid=c5b56430-5d56-41b1-8063-8ebc29999290", 
+            url=link, 
             config=config
         )
 
@@ -132,6 +137,6 @@ async def fit_markdown():
             print("Error:", result.error_message)
 
 
-link="https://www.getyourguide.de/fuerteventura-l419/fuerteventura-aloe-olivo-tour-mit-optionalem-mittagessen-t430764/?ranking_uuid=c1915090-c2ff-48d5-80ee-2c14298b4b6c"
-asyncio.run(fit_markdown())
-asyncio.run(try_using_wohle_website(link=link, Name="Fuerteventura Aloe & Olivo Tour mit optionalem Mittagessen"))
+link="https://www.getyourguide.de/fuerteventura-l419/fuerteventura-besuche-alle-highlights-an-1-tag-mit-8-personen-t719794/?ranking_uuid=c1915090-c2ff-48d5-80ee-2c14298b4b6c"
+asyncio.run(fit_markdown(link=link))
+asyncio.run(try_using_wohle_website(link=link, Name="Fuerteventura: Besuche alle Highlights an 1 Tag mit 8 Personen"))
