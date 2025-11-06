@@ -5,11 +5,13 @@ import docker
 import asyncio
 from playwright.async_api import async_playwright
 llm = "hf.co/unsloth/Qwen3-14B-GGUF:Q6_K"
-
+from langchain_ollama import ChatOllama
 ws_link = "ws://127.0.0.1:9222"
 container = None
 playwright_browser = None
 playwright_page = None
+
+model = ChatOllama(model="TestModel", temperature=0.1)
 
 async def connect_playwright_to_cdp(cdp_url: str):
     """
@@ -182,7 +184,7 @@ async def makescreen(name, page):
 
 
 async def get_link_basic(location):
-    model = ChatOllama(model="hf.co/unsloth/Qwen3-8B-GGUF:Q4_K_S")
+    model = ChatOllama(model=model)
     browser = Browser(headless=False, keep_alive=True, cdp_url=ws_link)
     
     try:
