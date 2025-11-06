@@ -77,7 +77,8 @@ Now process the given crawled content and return JSON that fits the model exactl
             url=link,
             config=crawler_config,
         )
-        return result.extracted_content
+        erg: informations = result.extracted_content
+        return erg
 
 async def try_using_fitt_website(link,Name):
     extra_args = {"temperature":0}
@@ -140,7 +141,9 @@ Now process the given crawled content and return JSON that fits the model exactl
             url=link,
             config=crawler_config,
         )
-        return result.extracted_content
+
+        erg: informations = result.extracted_content
+        return erg
 
 
 

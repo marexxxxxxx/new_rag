@@ -171,7 +171,7 @@ def deep_analyst(state:state):#
 async def get_informations_fast(state: state):
     link = state["link"]
     try:
-        test = try_using_fitt_website(link=link, Name=state["advanced_current_obj"].name)
+        test = await try_using_fitt_website(link=link, Name=state["advanced_current_obj"].name)
         erg: informations = test
     except:
         None
@@ -179,7 +179,7 @@ async def get_informations_fast(state: state):
         #erg = None
 
     obj = informations(
-        highlights=erg["highlights"],
+        highlights=erg.highlights,
         full_description=erg.full_description,
         includes=erg.includes,
         meeting_point=erg.meeting_point,
