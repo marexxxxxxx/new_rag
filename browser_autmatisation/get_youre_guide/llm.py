@@ -6,7 +6,7 @@ from state import state, isevent, ActivityListing, ActivityListing_advanced, inf
 from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt, deep_extracter, deep_full_descriptin_extractor, deep_highlight_extractor, deep_meeting_point_extractor, deep_includes_extractor,is_inforamtion_good_prompt
 from scraper import get_youre_data
 from scraper import splitting_events, splitt_and_cut
-is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0",temperature=0.1, num_predict=1000)
+is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000)
 json_format_model = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, num_predict=1500)
 look_if_good = ChatOllama(model="hf.co/unsloth/Qwen3-14B-GGUF:Q6_K", temperature=0.1, num_predict=1500)
 from geopy.geocoders import Nominatim
@@ -40,9 +40,9 @@ def event_checker(state: state): #Findet herraus, was events sind, und was nicht
 def link_formater(erg: ActivityListing): #verändert die postion des links sp, das der .jpeg link postion 0 ist
     try:
         links = erg.url
-        if ".jpeg" not in links[0]:
+        if ".jpeg" not in links[0] and ".jpg" not in links[0]:
             return erg
-        elif ".jpeg" in links[0]:
+        elif ".jpeg" in links[0] or ".jpg" in links[0]:
             better_links = [links[1], links[0]]
             erg.url = better_links
             return erg
@@ -72,18 +72,25 @@ from time import sleep
 def get_deep_link(state:state): #Das soll die Objecte also die den Markdown text zu den einzelnen activen erstellen
     """Zuständig für den Web Part, also für Link getting, richtig formatieren, dann webseite auf rufen"""
     sleep(1) 
+    if state["ergebnisse"] == []:
+        return {}
     new_version = state["ergebnisse"]
     obj: ActivityListing = state["ergebnisse"][0]
+    obj = link_formater(obj)
     
     new_version.pop(0)
-    if obj.name.lower() in ["rating rules", "company", "jobs", "work with us"]:
-        return {"ergebnisse": new_version} 
-    obj = link_formater(obj)
+    #Maybe DEPRICATED
+    try:
+        if obj.name.lower() in ["rating rules", "company", "jobs", "work with us"]:
+            return {"ergebnisse": new_version} 
+    except Exception as e:
+        print(f"DeadObj: {e}")
+        return {"ergebnisse": new_version}
     
     link = obj.url[0]
     state["link"] = link
-
-    if ".jpeg" in link:
+    print(link)
+    if ".jpeg" in link or ".jpg" in link:
         raise Exception("Falsches Format")
     
     return {"link": link, "advanced_current_obj": obj, "ergebnisse": new_version}
@@ -171,13 +178,13 @@ def deep_analyst(state:state):#
 async def get_informations_fast(state: state):
     link = state["link"]
     try:
-        test = await try_using_fitt_website(link=link, Name=state["advanced_current_obj"].name)
+        test = await try_using_fitt_website(link=link, name=state["advanced_current_obj"].name)
         erg: informations = test
     except Exception as e:
         None
         print(f"HEy {e}")
-        #erg = None
-        return {"link_and_name":[link,state["advanced_current_obj"].name]} 
+
+        return {"link_and_name":[link,state["advanced_current_obj"].name]} #hier muss eigentlich noch state[informations_to_check] = [] gesetzt werden
 
     obj = informations(
         highlights=erg.highlights,
@@ -192,12 +199,13 @@ async def get_informations_fast(state: state):
     return {"obj": ende,"informations_to_check":erg, "link_and_name":[link,state["advanced_current_obj"].name]} 
     
 
-def get_information_whole_page(state: state):
+async def get_information_whole_page(state: state):
     link = state["link"]
     try:
-        erg: informations  = try_using_wohle_website(link=state["link_and_name"][0], Name=state["link_and_name"][1])
-    except:
-        erg = None
+        erg: informations  = await try_using_wohle_website(link=state["link_and_name"][0], name=state["link_and_name"][1])
+    except Exception as e:
+        print(e)
+        return {} 
 
     obj = informations(
         highlights=erg.highlights,

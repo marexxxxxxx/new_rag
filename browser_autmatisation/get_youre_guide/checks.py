@@ -49,3 +49,7 @@ def check_if_link(state:state): #dafür zuständig zu überprüfen ob da ein Lin
         return 1
     else:
         raise Exception("Fehler bei get_deep_link")
+    
+
+def platzhalter(state:state):
+    None

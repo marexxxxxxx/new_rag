@@ -29,7 +29,7 @@ def llama_indexer_connect():
 
 
 #EntityNode
-def event_node(name, rating_average,rating_count,price_value,price_currency,price_unit,duration_min_hours,url,highlights,full_description,includes,meeting_point):
+def event_node(name, rating_average,rating_count,price_value,price_currency,price_unit,duration_min_hours,url,highlights,full_description,includes,meeting_point,non_suitable):
     llama_indexer_connect()
     event_node = EntityNode(
         name=name,
@@ -47,13 +47,15 @@ def event_node(name, rating_average,rating_count,price_value,price_currency,pric
             "highlights":highlights,
             "full_description":full_description,
             "includes":includes,
-            "meeting_point":meeting_point
+            "meeting_point":meeting_point,
+            "non_suitable":non_suitable
         }
     )
-
-    embeddings_description = embedder.embed_query(str(full_description['full_description']))
+    if full_description == None:
+        full_description=""
+    embeddings_description = embedder.embed_query(full_description)
     embedding = ChunkNode(
-        text=str(full_description['full_description']),
+        text=full_description,
         embedding=embeddings_description,
         meta_data={}
     )
@@ -74,7 +76,7 @@ def builder(state:state):
     llama_indexer_connect()
     get_current_node, new_ergebnisse = state["result_list"][0], state["result_list"]
     new_ergebnisse.pop(0)
-    basic, advanced = get_current_node.ActivityListing, get_current_node.Advanced
+    basic, advanced = get_current_node.ActivityListing, get_current_node.informations
     event_node(**basic.dict(), **advanced.dict())
     #get_current_node.close() ##irgendwas stimmt damitnicht muss ünerarbeitet werden
     return {"result_list":new_ergebnisse}

@@ -7,6 +7,20 @@ import time
 from pydantic import BaseModel
 from crawl4ai import LLMExtractionStrategy
 from typing import Annotated, Union
+from langchain_core.runnables import RunnableLambda
+
+
+async def timeout_function(func, link,name, timeout=60):
+    try:
+        return await asyncio.wait_for(
+            func(link,name),
+            timeout=timeout
+        )
+    except asyncio.TimeoutError:
+        raise
+
+timeout_seconds=45
+
 
 class informations(BaseModel):
     highlights: Annotated[Union[str, None], "Highlights of the Trip. No Reviews"]
@@ -18,14 +32,30 @@ class informations(BaseModel):
 llm = "ollama/hf.co/unsloth/Qwen3-14B-GGUF:Q6_K"
 
 
-async def try_using_wohle_website(link,Name):
-    extra_args = {"temperature":0}
+
+
+
+
+
+
+
+
+
+async def try_using_wohle_websitee(link,Name):
+    extra_args = {"temperature":0,
+                  "timeout": timeout_seconds}
     content = ["div#row-highlights-point-header-content.row.container", "div#row-full-description-header-content.row.container","div#row-inclusions-header-content.row.container","div#row-meeting-points-header-content.row.container","div#row-important-information-header-content.row.container"]
     crawler_config = CrawlerRunConfig(
+        
         target_elements=content,
         word_count_threshold=1,
         extraction_strategy=LLMExtractionStrategy(
+            extra_args=extra_args,
             llm_config=LLMConfig(provider=llm),
+            chunk_token_threshold=1000,
+            overlap_rate=0.1,
+            apply_chunking=True,
+            max_tokens=1100,
             schema=informations.model_json_schema(),
             extraction_type="schemah",
             instruction=f"""
@@ -89,17 +119,21 @@ Now process the given crawled content and return JSON that fits the model exactl
         return erg
 
 
-async def try_using_fitt_website(link,Name):
-    extra_args = {"temperature":0}
+async def try_using_fitt_websitee(link,Name):
+    extra_args = {"temperature":0,
+                  "timeout": timeout_seconds}
     content = ["div#row-highlights-point-header-content.row.container", "div#row-full-description-header-content.row.container","div#row-inclusions-header-content.row.container","div#row-meeting-points-header-content.row.container","div#row-important-information-header-content.row.container"]
     crawler_config = CrawlerRunConfig(
+        
         target_elements=content,
         word_count_threshold=1,
         extraction_strategy=LLMExtractionStrategy(
+            extra_args=extra_args,
             llm_config=LLMConfig(provider=llm),
             schema=informations.model_json_schema(),
             extraction_type="schemah",
             input_format="fit_markdown",
+            max_tokens=1100,
             instruction=f"""
 From the crawled content, extract all information related to "{Name}".  
 Ignore reviews and unrelated content.
@@ -162,49 +196,39 @@ Now process the given crawled content and return JSON that fits the model exactl
         return erg
 
 
+async def try_using_wohle_website(link, name, func=try_using_wohle_websitee):
+    max_attempts = 3
+    
+    for attempt in range(max_attempts):
+        try:
+            result = await timeout_function(
+                func=func,
+                link=link,
+                name=name,
+                timeout=60
+            )
+            return result
+        except asyncio.TimeoutError:
+            if attempt == max_attempts - 1:  # Letzter Versuch
+                raise
+            # Optional: Wartezeit zwischen Versuchen
+            await asyncio.sleep(1)
 
 
-from pydantic import BaseModel
-from typing import Annotated, Union
-
-
-
-
-
-async def llm_based_extraction():
-
-    None
-
-
-
-async def fit_markdown(link):
-    pruning_filter = PruningContentFilter(
-        threshold=0.40,
-        threshold_type="dynamic",
-        min_word_threshold=4
-    )
-    md_generator= DefaultMarkdownGenerator(content_filter=pruning_filter)
-    config = CrawlerRunConfig(
-        markdown_generator=md_generator
-    )
-
-
-    async with AsyncWebCrawler() as crawler:
-        result = await crawler.arun(
-            url=link, 
-            config=config
-        )
-
-        if result.success:
-            # 'fit_markdown' is your pruned content, focusing on "denser" text
-            print("Raw Markdown length:", len(result.markdown.raw_markdown))
-            print("Fit Markdown length:", len(result.markdown.fit_markdown))
-            time.sleep(10)
-            print(result.markdown.fit_markdown)
-        else:
-            print("Error:", result.error_message)
-
-
-#link="https://www.getyourguide.de/fuerteventura-l419/"
-#asyncio.run(fit_markdown(link=link))
-#asyncio.run(try_using_wohle_website(link=link, Name="Fuerteventura: Besuche alle Highlights an 1 Tag mit 8 Personen"))
+async def try_using_fitt_website(link, name, func=try_using_fitt_websitee):
+    max_attempts = 3
+    
+    for attempt in range(max_attempts):
+        try:
+            result = await timeout_function(
+                func=func,
+                link=link,
+                name=name,
+                timeout=60
+            )
+            return result
+        except asyncio.TimeoutError:
+            if attempt == max_attempts - 1:  # Letzter Versuch
+                raise
+            # Optional: Wartezeit zwischen Versuchen
+            await asyncio.sleep(1)
