@@ -183,7 +183,7 @@ async def get_informations_fast(state: state):
     except Exception as e:
         None
         print(f"HEy {e}")
-
+# hier gibt es fhler mit dem .namen element
         return {"link_and_name":[link,state["advanced_current_obj"].name]} #hier muss eigentlich noch state[informations_to_check] = [] gesetzt werden
 
     obj = informations(

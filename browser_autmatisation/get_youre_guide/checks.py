@@ -38,7 +38,7 @@ def memgraph_check(state:state):
     if state["ergebnisse"] != []:
         return 0
     if state["ergebnisse"] == []:
-        return 1
+        return 20
     else:
         raise Exception("Unkown state of Ergebnis")
 

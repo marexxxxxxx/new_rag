@@ -52,7 +52,7 @@ graph.add_edge(GET_DEEP_LINK, GET_INFORMATIONS_FAST)
 graph.add_conditional_edges(GET_INFORMATIONS_FAST, is_information_good, {0: ERGEBNISSE_LEER, 1: GET_INFORMATION_WHOLE_PAGE})
 graph.add_edge(GET_INFORMATION_WHOLE_PAGE, ERGEBNISSE_LEER)
 graph.add_conditional_edges(ERGEBNISSE_LEER, go_deeper_check, {0: GET_DEEP_LINK, 1: NODE_CREATER})
-graph.add_conditional_edges(NODE_CREATER, memgraph_check, {0: NODE_CREATER, 1: END})
+graph.add_conditional_edges(NODE_CREATER, memgraph_check, {0: NODE_CREATER, 20: END})
 
 
 
