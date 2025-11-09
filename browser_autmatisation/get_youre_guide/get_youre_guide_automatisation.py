@@ -52,7 +52,7 @@ graph.add_edge(GET_DEEP_LINK, GET_INFORMATIONS_FAST)
 graph.add_conditional_edges(GET_INFORMATIONS_FAST, is_information_good, {0: ERGEBNISSE_LEER, 1: GET_INFORMATION_WHOLE_PAGE})
 graph.add_edge(GET_INFORMATION_WHOLE_PAGE, ERGEBNISSE_LEER)
 graph.add_conditional_edges(ERGEBNISSE_LEER, go_deeper_check, {0: GET_DEEP_LINK, 1: NODE_CREATER})
-graph.add_conditional_edges(NODE_CREATER, memgraph_check, {1: NODE_CREATER, 2: END})
+graph.add_conditional_edges(NODE_CREATER, memgraph_check, {0: NODE_CREATER, 1: END})
 
 
 
@@ -83,7 +83,7 @@ async def create_data_base(link):
     await app.ainvoke(init, config=conf)
 
 
-#mermaid_syntax = graph.get_graph().draw_mermaid()
+mermaid_code = app.get_graph().draw_mermaid()
+print(mermaid_code)
 
-
-asyncio.run(create_data_base("https://www.getyourguide.com/berlin-l17/"))
+asyncio.run(create_data_base("https://www.getyourguide.com/s/?q=losangeles&searchSource=3&src=search_bar"))

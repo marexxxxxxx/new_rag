@@ -21,6 +21,15 @@ services:
       - QUICK_CONNECT_MG_PORT=7687
     networks:
       - network1
+
+  redis:
+    image: redis:8.2.3
+    container_name: redis_datenbank
+    ports:
+      - "6379:6379"
+    #command: redis-server --requirepass EinPasswort #Muss noch über env gesetzt werden.
+    networks:
+      - network1
 networks:
   network1:
     name: allezusammen

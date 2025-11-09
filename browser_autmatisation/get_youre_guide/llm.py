@@ -6,7 +6,7 @@ from state import state, isevent, ActivityListing, ActivityListing_advanced, inf
 from messages import is_event_prompt, json_format_prompt, deep_analyst_prompt, deep_struter_prompt, deep_extracter, deep_full_descriptin_extractor, deep_highlight_extractor, deep_meeting_point_extractor, deep_includes_extractor,is_inforamtion_good_prompt
 from scraper import get_youre_data
 from scraper import splitting_events, splitt_and_cut
-is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000)
+is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000, )
 json_format_model = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, num_predict=1500)
 look_if_good = ChatOllama(model="hf.co/unsloth/Qwen3-14B-GGUF:Q6_K", temperature=0.1, num_predict=1500)
 from geopy.geocoders import Nominatim

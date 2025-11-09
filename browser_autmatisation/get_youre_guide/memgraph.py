@@ -5,9 +5,12 @@ from llama_index.core import Settings
 from llama_index.core.graph_stores.types import EntityNode, ChunkNode, Relation
 from state import state
 from langchain_ollama import OllamaEmbeddings
-
+from test import test
 
 def llama_indexer_connect():
+    test("hf.co/unsloth/Qwen3-14B-GGUF:Q6_K")
+    test("hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0")
+    test("hf.co/LiquidAI/LM2-1.2B-Extract-GGUF:Q8_0")
     global graph_store, embedder
     embedder = OllamaEmbeddings(model="hf.co/leliuga/all-MiniLM-L6-v2-GGUF:F16")
     Settings.embed_model =HuggingFaceEmbedding(

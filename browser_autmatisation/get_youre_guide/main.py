@@ -5,6 +5,15 @@ from memgraph import returner
 from geopy.geocoders import Nominatim
 from fastapi.concurrency import run_in_threadpool
 from get_youre_guide_automatisation import create_data_base
+import redis
+
+r = redis.Redis(
+    host='localhost',  
+    port=6379,
+    db=0,
+    decode_responses=True
+)
+
 
 app = FastAPI()
 
