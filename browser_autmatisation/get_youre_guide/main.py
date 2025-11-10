@@ -6,7 +6,7 @@ from geopy.geocoders import Nominatim
 from fastapi.concurrency import run_in_threadpool
 from get_youre_guide_automatisation import create_data_base
 import redis
-
+from redis_func import create_data, create_data_pool
 r = redis.Redis(
     host='localhost',  
     port=6379,
@@ -16,6 +16,9 @@ r = redis.Redis(
 
 
 app = FastAPI()
+
+
+
 
 geolocator = Nominatim(user_agent="marec.shopping@gmail.com")
 coords = {}

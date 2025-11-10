@@ -232,4 +232,5 @@ def is_information_good(state:state):
         state["result_list"] = letzte_liste
         return 0
     else:
-        return 1
+        raise Exception()
+        return 20

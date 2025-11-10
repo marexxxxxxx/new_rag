@@ -7,10 +7,15 @@ from state import state
 from langchain_ollama import OllamaEmbeddings
 from test import test
 
-def llama_indexer_connect():
+
+def disconect():
     test("hf.co/unsloth/Qwen3-14B-GGUF:Q6_K")
     test("hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0")
     test("hf.co/LiquidAI/LM2-1.2B-Extract-GGUF:Q8_0")
+
+
+
+def llama_indexer_connect():
     global graph_store, embedder
     embedder = OllamaEmbeddings(model="hf.co/leliuga/all-MiniLM-L6-v2-GGUF:F16")
     Settings.embed_model =HuggingFaceEmbedding(
@@ -71,8 +76,10 @@ def event_node(name, rating_average,rating_count,price_value,price_currency,pric
         properties={"relationship_type": "content"}
     )
     graph_store.upsert_nodes([embedding,event_node])
+    return_value = event_node.model_dump()
     graph_store.upsert_relations([relation])
     graph_store.close()
+    yield return_value
 
 import attr
 def builder(state:state):

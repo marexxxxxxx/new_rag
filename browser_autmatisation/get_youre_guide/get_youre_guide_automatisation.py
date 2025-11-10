@@ -80,7 +80,7 @@ async def create_data_base(link):
         "link_and_name": None
     }
     conf = {"recursion_limit":10000000}
-    await app.ainvoke(init, config=conf)
+    await app.astream_events(init, config=conf)
 
 
 mermaid_code = app.get_graph().draw_mermaid()
