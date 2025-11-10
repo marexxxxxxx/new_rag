@@ -77,13 +77,20 @@ async def create_data_base(link):
         "result_list" :[],
         "obj": None,
         "informations_to_check": None,
-        "link_and_name": None
+        "link_and_name": None,
+        "mem_result":None,
     }
     conf = {"recursion_limit":10000000}
-    await app.astream_events(init, config=conf)
-
-
-mermaid_code = app.get_graph().draw_mermaid()
-print(mermaid_code)
-
-asyncio.run(create_data_base("https://www.getyourguide.com/s/?q=losangeles&searchSource=3&src=search_bar"))
+    async for event in app.astream_events(init, config=conf, version="v1"):
+        
+        # Filtern Sie nach den Events, die Sie wirklich an den Client senden wollen
+        # z.B. nur die Ergebnisse von Ihrem 'event_node'
+        
+        # Annahme: Ihr Knoten heißt im Graph 'event_node_name'
+        if event["event"] == "on_tool_end" and event["name"] == "NODE_CREATER":
+            
+            # Holen Sie das Ergebnis, das 'event_node' *returned* hat
+            node_output = event["data"].get("output")
+            if node_output:
+                # 'yield' gibt die Daten an den ARQ-Worker zurück
+                yield node_output

@@ -1,29 +1,41 @@
-from arq.connections import ArqRedis
+from arq.connections import RedisSettings
+# 'func' wird für diese Einstellung nicht benötigt
+# from arq.worker import func 
+from memgraph import find_locations_within_radius
 from get_youre_guide_automatisation import create_data_base
 from browser_auto import get_link_async
 
+async def get_data(ctx, location):
+    cords = await find_locations_within_radius(location)
+
 async def create_data(ctx, location):
-    """
-    Das ist die Funktion, die der Worker tatsächlich ausführt.
-    Das erste Argument 'ctx' wird von ARQ bereitgestellt.
-    """
+    print(f"ARQ-Job: Starte Generator für: {location}")
     try:
-        link = await get_link_async(location)
-        await create_data_base(link)
+        
+        link = await get_link_async(location=location)
+        
+        print(f"ARQ-Job: Starte 'create_data_base' Generator mit Link...")
+        async for data_result in create_data_base(link):
+            print(f"ARQ-Job: Generator hat Daten geliefert: {data_result}")
+        
+        print(f"ARQ-Job: Generator für {location} beendet.")
+            
     except Exception as e:
-        print(f"Folgender Fehler: {e}")
+        # Dieser Fehler sollte jetzt nicht mehr auftreten
+        print(f"ARQ-Job: Folgender Fehler: {e}")
 
 
-
-REDIS_SETTINGS = ArqRedis(host='localhost', port=6379)
+REDIS_SETTINGS = RedisSettings(host='localhost', port=6379)
 
 
 class WorkerSettings:
-    """
-    Definiert die Einstellungen für den ARQ-Worker.
-    """
-    # Liste der Funktionen, die der Worker kennt und ausführen darf
+    queue_name = "queue_create_data"
+    max_jobs = 1
     functions = [create_data] 
-    
     redis_settings = REDIS_SETTINGS
-    # queue_name = 'arq:queue' # (Optional, wenn Standard verwendet wird)
+
+class give_events:
+    queue_name = "queue_get_data"
+    max_jobs = 4
+    functions = [get_data]
+    redis_settings = REDIS_SETTINGS
