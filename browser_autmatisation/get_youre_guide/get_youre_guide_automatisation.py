@@ -78,13 +78,12 @@ async def create_data_base(link):
         "mem_result":None,
     }
     conf = {"recursion_limit":10000000}
-    async for event in app.astream_events(init, config=conf, version="v1"):
-        
+    async for event in app.astream_events(init, config=conf, version="v2"):        
         # Filtern Sie nach den Events, die Sie wirklich an den Client senden wollen
         # z.B. nur die Ergebnisse von Ihrem 'event_node'
         
         # Annahme: Ihr Knoten heißt im Graph 'event_node_name'
-        if event["event"] == "on_tool_end" and event["name"] == "NODE_CREATER":
+        if event["event"] == "on_chain_end" and event["name"] == "NODE_CREATER":
             
             # Holen Sie das Ergebnis, das 'event_node' *returned* hat
             node_output = event["data"].get("output")
