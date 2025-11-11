@@ -24,11 +24,9 @@ class ActivityListing(BaseModel):
     url: Annotated[list[str], "The Urls to the activity and image"]
 
 
-
 class ActivityListing_advanced(BaseModel):
     ActivityListing: ActivityListing
     informations: informations
-
 
     
 class state(TypedDict):
@@ -39,7 +37,7 @@ class state(TypedDict):
     list_with_text: Annotated[list, "List with the text"]
     link: Annotated[list[str], "The list with the links to check"]
     #SecoundarTeil
-    advanced_current_obj: Annotated[..., "The current Object to get a detailed extract from"]
+    advanced_current_obj: Annotated[ActivityListing, "The current Object to get a detailed extract from"]
     result_list: Annotated[list, "List with the final objects"]
 
     #Crawl4ai_infors
@@ -49,12 +47,10 @@ class state(TypedDict):
 
 class isevent(BaseModel):
     is_event: Annotated[bool,"Is the given text a event"]
+
 class has_more_info(BaseModel):
     has_more: Annotated[bool,"Has more infos."]
-
-
-
-
+    
 class bewertung(BaseModel):
     points: Annotated[float, "The number of points the object become"]
     

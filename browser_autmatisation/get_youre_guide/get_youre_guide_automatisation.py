@@ -4,7 +4,7 @@ from state import state
 from langchain_core.runnables.config import RunnableConfig
 from scraper import get_youre_data
 
-from checks import schreibe_alles, check, get_data_check, go_deeper_check, memgraph_check, check_if_link,platzhalter
+from checks import check, get_data_check, go_deeper_check, memgraph_check, check_if_link,platzhalter
 config = RunnableConfig(recursion_limit=100)
 from dotenv import load_dotenv
 
@@ -30,15 +30,12 @@ graph.add_node(GET_YOURE_DATA, get_youre_data)
 graph.add_node(FIST_FORMATER, formater)
 graph.add_node(IS_EVENT, event_checker)
 graph.add_node(JSON_FORMAT, json_format)
-graph.add_node(SCHREIBE,schreibe_alles)
+
 #SecoundarTeil
 graph.add_node(ERGEBNISSE_LEER,platzhalter)
 graph.add_node(GET_INFORMATIONS_FAST, get_informations_fast)
 graph.add_node(GET_INFORMATION_WHOLE_PAGE, get_information_whole_page)
 graph.add_node(GET_DEEP_LINK, get_deep_link)
-graph.add_node(EXCTRACTOR_FOR_DEEP_ANALYST, extracter_for_deep_analyst)
-graph.add_node(DEEP_ANALYST, deep_analyst)
-graph.add_node(GET_YOURE_DATA_2, get_youre_data)
 #MemgraphPart
 graph.add_node(NODE_CREATER, builder)
 
