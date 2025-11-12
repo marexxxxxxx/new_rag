@@ -64,3 +64,14 @@ def splitt_and_cut(text):
 
 crawl_strat = AsyncPlaywrightCrawlerStrategy(browser_adapter=unde,
                                              browser_config=browser_conf)
+
+def get_youre_data(state:state):
+
+    async def get_youre_dat(link):
+        async with AsyncWebCrawler(config=browser_conf) as crawl:
+            result = await crawl.arun(url=link)
+        return result.markdown
+    erg = asyncio.run(get_youre_dat(state["link"]))
+    #erg = "".join([s.replace('\n', '') for s in erg if s.strip('\n')]) #muss eventuell entfernt werden da es dem regex probleme machen könnte
+
+    return {"list_with_text": erg}

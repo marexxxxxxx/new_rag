@@ -4,8 +4,14 @@ from arq.connections import RedisSettings
 from memgraph import find_locations_within_radius
 from get_youre_guide_automatisation import create_data_base
 from browser_auto import get_link_async
-
+import logging
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)  # <--
 async def get_data(ctx, location):
+    import pdb; pdb.set_trace()  # <--- HIER
+
+    log.info(f"[JOB START] create_data für: {location}")
+    # ... restlicher Code    
     cords = await find_locations_within_radius(location)
 
 async def create_data(ctx, location):
@@ -33,6 +39,8 @@ class WorkerSettings:
     max_jobs = 1
     functions = [create_data] 
     redis_settings = REDIS_SETTINGS
+    job_timeout=1340
+    max_tries=2
 
 class give_events:
     queue_name = "queue_get_data"

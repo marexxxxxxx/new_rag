@@ -195,11 +195,11 @@ async def get_link_basic(location):
         
         # Warte auf vollständiges Laden der Seite
         await asyncio.sleep(5)
-        await makescreen("step_0_startseite", page)
+        #await makescreen("step_0_startseite", page)
         
         await connect_playwright_to_cdp(ws_link)
         await switch_tab_with_playwright("https://www.getyourguide.com")
-        await makescreen("step_1_after_playwright_connect", page)
+        #await makescreen("step_1_after_playwright_connect", page)
         
         pages = await browser.get_pages()
         print(f"Anzahl offener Pages: {len(pages)}")
@@ -218,7 +218,7 @@ async def get_link_basic(location):
         cookie_success = await click_with_retry(cookie_banner, "Cookie Banner", max_retries=2)
         if not cookie_success:
             print("⚠ Cookie Banner konnte nicht geklickt werden, fahre trotzdem fort...")
-        await makescreen("step_2_cookie_banner", page)
+        #await makescreen("step_2_cookie_banner", page)
         
         await asyncio.sleep(2)
         
@@ -233,7 +233,7 @@ async def get_link_basic(location):
         searchbar_success = await click_with_retry(searchbar, "Suchleiste", max_retries=3)
         if not searchbar_success:
             raise Exception("Suchleiste konnte nicht aktiviert werden")
-        await makescreen("step_3_suchleiste_geclickt", page)
+        #await makescreen("step_3_suchleiste_geclickt", page)
         
         await asyncio.sleep(2)
         
@@ -241,7 +241,7 @@ async def get_link_basic(location):
         print(f"\n=== Schritt 3: Text '{location}' eingeben ===")
         await searchbar.fill(location)
         print(f"✓ Text '{location}' eingegeben")
-        await makescreen("step_4_text_eingegeben", page)
+        #await makescreen("step_4_text_eingegeben", page)
         await asyncio.sleep(3)
         
         # URL vor der Suche speichern
@@ -260,7 +260,7 @@ async def get_link_basic(location):
         search_success = await click_with_retry(search_button, "Search Button", max_retries=3)
         if not search_success:
             raise Exception("Search Button konnte nicht geklickt werden")
-        await makescreen("step_5_search_button_geclickt", page)
+        #await makescreen("step_5_search_button_geclickt", page)
         
         # === URL-Änderung überprüfen ===
         print("\n=== Schritt 5: Warte auf URL-Änderung ===")
@@ -272,7 +272,7 @@ async def get_link_basic(location):
             min_stable_time=2
         )
         
-        await makescreen("step_6_finale_seite", page)
+        #await makescreen("step_6_finale_seite", page)
         
         # Finale Überprüfung
         if final_url == url_before_search:

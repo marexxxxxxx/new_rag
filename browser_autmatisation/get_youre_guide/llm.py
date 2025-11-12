@@ -96,6 +96,11 @@ def formater(state:state):
 
 
 async def get_informations_fast(state: state):
+    if state["ergebnisse"] == []:
+        print("sleep")
+        asyncio.sleep(60)
+        print("sleep2")
+        return {}
     link = state["link"]
     try:
         test = await try_using_fitt_website(link=link, name=state["advanced_current_obj"].name)
@@ -120,6 +125,11 @@ async def get_informations_fast(state: state):
     
 
 async def get_information_whole_page(state: state):
+    if state["ergebnisse"] == []:
+        print("sleep")
+        await asyncio.sleep(60)
+        print("sleep2")
+        return {}
     link = state["link"]
     try:
         erg: informations  = await try_using_wohle_website(link=state["link_and_name"][0], name=state["link_and_name"][1])
@@ -144,12 +154,15 @@ async def get_information_whole_page(state: state):
 def is_information_good(state:state):
     struc = look_if_good.with_structured_output(bewertung)
     erg = struc.invoke(is_inforamtion_good_prompt.invoke({"Text":state["informations_to_check"]}))
-    if erg.points >= 6:
-
+    if erg.points >= 6 and state["ergebnisse"] != []:
         letzte_liste = state["result_list"]
         letzte_liste.append(state["obj"])
         state["result_list"] = letzte_liste
         return 0
-    else:
-        raise Exception()
-        return 20
+    elif erg.points >= 6 and state["ergebnisse"] == []:
+        return 1
+    elif erg.points <6 and state["ergebnisse"] != []:
+        return 2
+    elif erg.points <6 and state["ergebnisse"] == []:
+        return 1
+

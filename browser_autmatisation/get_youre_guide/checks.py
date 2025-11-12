@@ -35,9 +35,10 @@ def go_deeper_check(state:state):
         raise Exception("go_deeper hat nicht funktioniert")
     
 def memgraph_check(state:state):
-    if state["ergebnisse"] != []:
+    if state["result_list"] != []:
         return 0
-    if state["ergebnisse"] == []:
+    if state["result_list"] == []:
+        
         return 20
     else:
         raise Exception("Unkown state of Ergebnis")

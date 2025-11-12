@@ -31,6 +31,7 @@ class ActivityListing_advanced(BaseModel):
     
 class state(TypedDict):
     mem_result = Annotated[...,"Memgraph node"]
+    connected = Annotated[int,"For Memgraph"]
     #PremierTeil
     current_obj: Annotated[str,"Object with the current event."]
     ergebnisse: Annotated[list, "Object with all of the events"] # D

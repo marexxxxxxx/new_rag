@@ -11,13 +11,12 @@ import sys
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 from neo4j import AsyncGraphDatabase
-
+connected = 0
 
 def disconect():
     test("hf.co/unsloth/Qwen3-14B-GGUF:Q6_K")
     test("hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0")
-    
-disconect()
+
 
 # Connection details
 MEMGRAPH_CONFIG = {
@@ -26,7 +25,7 @@ MEMGRAPH_CONFIG = {
     "password": ""
 }
 
-def llama_indexer_connect():
+def llama_indexer_connect():        
     global graph_store, embedder
     embedder = OllamaEmbeddings(model="hf.co/leliuga/all-MiniLM-L6-v2-GGUF:F16")
     Settings.embed_model =HuggingFaceEmbedding(
@@ -42,6 +41,7 @@ def llama_indexer_connect():
     PropertyGraphIndex.from_existing(
         property_graph_store=graph_store,
     )
+    return{"connected": connected}
 
 def get_async_driver():
     """Creates and returns an async neo4j driver."""
@@ -54,6 +54,23 @@ def get_async_driver():
 #EntityNode
 def event_node(name, rating_average,rating_count,price_value,price_currency,price_unit,duration_min_hours,url,highlights,full_description,includes,meeting_point,non_suitable):
     llama_indexer_connect()
+    
+    disconect()
+    coords_list = None
+    if isinstance(meeting_point, str) and ',' in meeting_point:
+        try:
+            # String aufteilen, Leerzeichen entfernen, in Float umwandeln
+            coords_list = [float(coord.strip()) for coord in meeting_point.split(',')]
+        except (ValueError, TypeError):
+            # Falls Umwandlung fehlschlägt (z.B. Text statt Zahlen)
+            coords_list = None 
+    elif isinstance(meeting_point, list):
+         # Falls es schon eine Liste ist, sicherstellen, dass es Floats sind
+         try:
+             coords_list = [float(c) for c in meeting_point]
+         except (ValueError, TypeError):
+             coords_list = None
+    print(name)
     event_node = EntityNode(
         name=name,
         label="event",
@@ -70,7 +87,7 @@ def event_node(name, rating_average,rating_count,price_value,price_currency,pric
             "highlights":highlights,
             "full_description":full_description,
             "includes":includes,
-            "meeting_point":meeting_point,
+            "meeting_point":coords_list,
             "non_suitable":non_suitable
         }
     )
@@ -113,7 +130,9 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
 
-async def find_locations_within_radius(target_location_name: str):
+async def find_locations_within_radius(target_location_name:str):
+
+
     """
     Kombiniert Geocoding und eine Memgraph-Radius-Suche in einer Funktion.
 
@@ -131,6 +150,7 @@ async def find_locations_within_radius(target_location_name: str):
             location = geolocator.geocode(target_location_name, timeout=5)
             print("Geocoding finished.")
             if location:
+                print(location.latitude, location.longitude)
                 return {"latitude": location.latitude, "longitude": location.longitude}
         except (GeocoderTimedOut, GeocoderUnavailable) as e:
             print(f"Geocoding-Fehler (Dienst nicht erreichbar): {e}", file=sys.stderr)
@@ -183,8 +203,8 @@ ORDER BY distance_km
     """
 
     params = {
-        "target_lat": target_coords["latitude"],
-        "target_lon": target_coords["longitude"]
+        "target_lat": float(target_coords["latitude"]),
+        "target_lon": float(target_coords["longitude"])
     }
 
     locations_within_radius = []
@@ -197,7 +217,7 @@ ORDER BY distance_km
         async for record in result:
             locations_within_radius.append(record.data())
         print(json.dumps(locations_within_radius, indent=2))
-        return json.dumps(locations_within_radius, indent=2)
+        return locations_within_radius
 
     except Exception as e:
         print(f"Memgraph Query-Fehler: {e}", file=sys.stderr)
