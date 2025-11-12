@@ -193,14 +193,27 @@ WITH loc, loc_lat, loc_lon,
 
 WHERE dist_meters <= 100000
 
-// RETURN angepasst an die Properties im Bild (loc.name existiert nicht)
-RETURN loc.id AS id, 
-       loc.full_description AS description,
+// RETURN mehr Eigenschaften für Aktivitäten
+RETURN loc { 
+    .name, 
+    .rating_average, 
+    .rating_count, 
+    .price_value, 
+    .price_currency, 
+    .price_unit, 
+    .duration_min_hours, 
+    .url,
+    .highlights,
+    .full_description,
+    .includes
+} AS event_data,
        loc_lat AS lat,
        loc_lon AS lon,
        round((dist_meters / 1000) * 100) / 100.0 AS distance_km
 ORDER BY distance_km
+LIMIT 20  // Begrenze auf 20 Ergebnisse für Performance
     """
+
 
     params = {
         "target_lat": float(target_coords["latitude"]),

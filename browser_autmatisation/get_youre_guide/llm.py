@@ -151,7 +151,7 @@ async def get_information_whole_page(state: state):
     return {"letzte_liste": letzte_liste} 
 
 
-def is_information_good(state:state):
+async def is_information_good(state:state):
     struc = look_if_good.with_structured_output(bewertung)
     erg = struc.invoke(is_inforamtion_good_prompt.invoke({"Text":state["informations_to_check"]}))
     if erg.points >= 6 and state["ergebnisse"] != []:
