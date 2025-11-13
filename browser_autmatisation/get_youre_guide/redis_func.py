@@ -1,17 +1,13 @@
-# redis_func.py
 import uuid
 import asyncio
-import json
-from fastapi import FastAPI, Depends, Request, HTTPException
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi import FastAPI, Depends, Request
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from arq.connections import create_pool, ArqRedis
 from contextlib import asynccontextmanager
-from redis_worker import REDIS_SETTINGS
-from fastapi.middleware.cors import CORSMiddleware
+from redis_worker import REDIS_SETTINGS 
+import json
 
-# ---------------------------
-# App State & Lifespan
-# ---------------------------
 app_state = {}
 
 @asynccontextmanager
@@ -23,161 +19,185 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# ---------------------------
-# CORS
-# ---------------------------
+# CORS Middleware - muss VOR allen Routen definiert werden
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
 async def get_redis_pool() -> ArqRedis:
     return app_state["redis_pool"]
 
-# ---------------------------
-# Hilfsfunktionen
-# ---------------------------
 def sse_format(data: str) -> str:
     return f"data: {data}\n\n"
 
-async def sse_job_stream(request: Request, job_id: str, redis_pool: ArqRedis):
-    """
-    Pollt den Job-Status und streamt Ergebnisse per SSE.
-    Verwendet keine Redis-Ergebnis-Speicherung.
-    """
-    # Channel für Job-Updates
-    channel = f"job_updates:{job_id}"
-    pubsub = redis_pool.pubsub()
+async def poll_job_result(job_id: str, redis_pool: ArqRedis, timeout: int = 30):
+    """Pollt das Job-Ergebnis direkt von ARQ"""
+    start_time = asyncio.get_event_loop().time()
     
-    try:
-        # Abonniere den Job-Update-Channel
-        await pubsub.subscribe(channel)
+    while (asyncio.get_event_loop().time() - start_time) < timeout:
+        # Prüfe ob Job existiert
+        job_key = f"arq:job:{job_id}"
+        job_exists = await redis_pool.exists(job_key)
         
-        # Initialer Status
-        yield sse_format(json.dumps({"status": "STARTED", "job_id": job_id}))
+        if not job_exists:
+            return {"status": "error", "message": "Job nicht gefunden"}
         
-        async for message in pubsub.listen():
-            if await request.is_disconnected():
-                break
-                
-            if message["type"] == "message":
-                data = message["data"].decode()
-                yield sse_format(data)
-                
-                # Wenn Job fertig ist, Schleife beenden
-                try:
-                    message_data = json.loads(data)
-                    if message_data.get("status") in ["COMPLETED", "FAILED"]:
-                        break
-                except json.JSONDecodeError:
-                    continue
-                    
-    except Exception as e:
-        yield sse_format(json.dumps({"status": "ERROR", "error": str(e)}))
-    finally:
-        await pubsub.unsubscribe(channel)
-        await pubsub.close()
-
-# ---------------------------
-# Endpunkte
-# ---------------------------
-@app.get("/get_location/{location}")
-async def get_location_stream(
-    location: str,
-    request: Request,
-    redis_pool: ArqRedis = Depends(get_redis_pool)
-):
-    """Startet den Job 'get_data' und streamt die Ergebnisse per SSE."""
-    job_id = str(uuid.uuid4())
+        # Prüfe ob Job abgeschlossen ist
+        result_key = f"arq:job_result:{job_id}"
+        result = await redis_pool.get(result_key)
+        
+        if result is not None:
+            # Lösche das Ergebnis aus Redis nach dem Abruf
+            await redis_pool.delete(result_key)
+            try:
+                return json.loads(result)
+            except json.JSONDecodeError:
+                return result
+        
+        await asyncio.sleep(0.5)
     
-    # Job in Queue stellen
-    await redis_pool.enqueue_job(
-        "get_data",
-        location,
-        job_id,  # Job-ID als Parameter übergeben
-        _job_id=job_id,
-        _queue_name="queue_get_data",
-    )
-    
-    headers = {
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "Content-Type": "text/event-stream",
-        "X-Accel-Buffering": "no",
-        "Access-Control-Allow-Origin": "*",
-    }
-    return StreamingResponse(sse_job_stream(request, job_id, redis_pool), headers=headers)
+    return {"status": "timeout", "message": "Job-Timeout"}
 
 @app.get("/location/{location}")
-async def location_stream(
-    location: str,
-    request: Request,
+async def get_informations(
+    location: str, 
     redis_pool: ArqRedis = Depends(get_redis_pool)
 ):
-    """Startet den Job 'create_data' und streamt die Ergebnisse per SSE."""
     job_id = str(uuid.uuid4())
+    await redis_pool.enqueue_job('create_data', location, _job_id=job_id, _queue="queue_create_data")
+    return {"message": "Job erfolgreich eingereiht", "location": location, "job_id": job_id}
+
+@app.get("/get_location/{location}")
+async def test_job(
+    location: str, 
+    redis_pool: ArqRedis = Depends(get_redis_pool)
+):
+    """Testet ob Jobs korrekt erstellt und ausgeführt werden"""
+    job_id = str(uuid.uuid4())
+    print(f"Test: Starte Job {job_id} für {location}")
     
-    # Job in Queue stellen
-    await redis_pool.enqueue_job(
-        "create_data",
-        location,
-        job_id,  # Job-ID als Parameter übergeben
-        _job_id=job_id,
-        _queue_name="queue_create_data",
-    )
+    # Prüfe ob der Worker läuft
+    worker_info = await redis_pool.keys("arq:worker:*")
+    print(f"Aktive Worker: {worker_info}")
     
+    # Starte Job
+    job = await redis_pool.enqueue_job('get_data', location, _job_id=job_id, _queue_name="queue_get_data")
+    
+    # Warte kurz und prüfe Status
+    await asyncio.sleep(1)
+    
+    job_key = f"arq:job:{job_id}"
+    result_key = f"arq:result:{job_id}"
+    
+    job_exists = await redis_pool.exists(job_key)
+    result_exists = await redis_pool.exists(result_key)
+    
+    return {
+        "job_id": job_id,
+        "job_exists": job_exists,
+        "result_exists": result_exists,
+        "worker_count": len(worker_info),
+        "message": "Test abgeschlossen"
+    }
+
+@app.get("/stream/{job_id}")
+async def stream_results(
+    request: Request,
+    job_id: str,
+    redis_pool: ArqRedis = Depends(get_redis_pool)
+):
+    async def generate_events():
+        try:
+            # Sende Start-Event
+            yield sse_format(json.dumps({
+                "status": "STARTED", 
+                "job_id": job_id,
+                "message": "Suche wird gestartet"
+            }))
+
+            # Warte auf Job-Abschluss
+            result = await poll_job_result(job_id, redis_pool)
+            
+            if result and result.get("error"):
+                yield sse_format(json.dumps({
+                    "status": "FAILED",
+                    "error": result["error"]
+                }))
+            elif result:
+                # Sende die Aktivitätsdaten
+                if isinstance(result, list):
+                    # Direktes Array von Aktivitäten
+                    yield sse_format(json.dumps({
+                        "type": "location_data",
+                        "activities": result,
+                        "status": "COMPLETED"
+                    }))
+                elif isinstance(result, dict) and "activities" in result:
+                    # Bereits formatierte Antwort mit activities Feld
+                    yield sse_format(json.dumps({
+                        "type": "location_data",
+                        "activities": result["activities"],
+                        "status": "COMPLETED"
+                    }))
+                else:
+                    # Anderes Format, versuche es zu verarbeiten
+                    yield sse_format(json.dumps({
+                        "type": "location_data",
+                        "activities": result,
+                        "status": "COMPLETED"
+                    }))
+            else:
+                yield sse_format(json.dumps({
+                    "status": "FAILED",
+                    "error": "Keine Ergebnisse erhalten"
+                }))
+                    
+        except Exception as e:
+            yield sse_format(json.dumps({
+                "status": "FAILED",
+                "error": str(e)
+            }))
+
     headers = {
         "Cache-Control": "no-cache",
         "Connection": "keep-alive",
         "Content-Type": "text/event-stream",
-        "X-Accel-Buffering": "no",
         "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "X-Accel-Buffering": "no",  
     }
-    return StreamingResponse(sse_job_stream(request, job_id, redis_pool), headers=headers)
+    return StreamingResponse(generate_events(), headers=headers)
 
-@app.get("/debug/get_location/{location}")
-async def debug_get_location(
-    location: str,
-    redis_pool: ArqRedis = Depends(get_redis_pool)
-):
-    """Debug-Endpunkt: Startet Job und gibt nur job_id zurück"""
-    job_id = str(uuid.uuid4())
-    
-    await redis_pool.enqueue_job(
-        "get_data",
-        location,
-        job_id,
-        _job_id=job_id,
-        _queue_name="queue_get_data",
+# OPTIONS Handler für CORS Preflight Requests
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(request: Request, rest_of_path: str):
+    return JSONResponse(
+        content={"message": "CORS preflight"},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Credentials": "true",
+        }
     )
-    
-    return JSONResponse({"job_id": job_id, "status": "started"})
 
-@app.get("/debug/location/{location}")
-async def debug_location(
-    location: str,
-    redis_pool: ArqRedis = Depends(get_redis_pool)
-):
-    """Debug-Endpunkt: Startet Job und gibt nur job_id zurück"""
-    job_id = str(uuid.uuid4())
-    
-    await redis_pool.enqueue_job(
-        "create_data",
-        location,
-        job_id,
-        _job_id=job_id,
-        _queue_name="queue_create_data",
-    )
-    
-    return JSONResponse({"job_id": job_id, "status": "started"})
+# Health Check Endpoint
+@app.get("/")
+async def health_check():
+    return {"status": "healthy", "message": "FastAPI Server läuft"}
 
 @app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "message": "Service is running"}
+async def health_check_detailed():
+    redis_pool = await get_redis_pool()
+    redis_status = "connected" if redis_pool else "disconnected"
+    return {
+        "status": "healthy", 
+        "redis": redis_status,
+        "message": "FastAPI Server mit Redis-Verbindung"
+    }
