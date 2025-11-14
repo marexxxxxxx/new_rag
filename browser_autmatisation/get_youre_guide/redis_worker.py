@@ -3,30 +3,25 @@ import json
 from memgraph import find_locations_within_radius
 from get_youre_guide_automatisation import create_data_base
 from browser_auto import get_link_async
+import redis
+
+r = redis.Redis(
+    host='localhost',
+    port=6379
+)
+
+
+
+
 
 async def get_data(ctx, location):
     print(f"ARQ-Job {ctx['job_id']}: Starte Memgraph-Suche für: {location}")
     try:
-        # Memgraph-Abfrage direkt ausführen und Ergebnis zurückgeben
+        
         result = await find_locations_within_radius(location)
-        print(f"ARQ-Job {ctx['job_id']}: Memgraph-Suche abgeschlossen, Ergebnis-Typ: {type(result)}")
-        
-        # Stelle sicher, dass das Ergebnis eine Liste ist
-        if isinstance(result, str):
-            print(f"ARQ-Job {ctx['job_id']}: Ergebnis ist String, versuche zu parsen")
-            try:
-                result = json.loads(result)
-            except json.JSONDecodeError as e:
-                print(f"ARQ-Job {ctx['job_id']}: JSON Parse Fehler: {e}")
-                return {"error": f"JSON Parse Fehler: {e}"}
-        
-        if isinstance(result, list):
-            print(f"ARQ-Job {ctx['job_id']}: Rückgabe von {len(result)} Aktivitäten")
-        else:
-            print(f"ARQ-Job {ctx['job_id']}: Unerwarteter Ergebnis-Typ: {type(result)}")
-            
-        # Ergebnis direkt zurückgeben
-        return result
+        job_data = {"job_id": ctx['job_id'],
+                    "message": result}
+        r.xadd(ctx['job_id'], json.dump(job_data))
             
     except Exception as e:
         error_msg = f"ARQ-Job {ctx['job_id']} Fehler: {e}"
