@@ -62,9 +62,8 @@ async def test_job(
     }
 
 async def get_results(job_id):
-    pubsub = r.pubsub()
-    pubsub.subscribe("ergebnisse")
-    for i in pubsub.listen():
+    
+    for i in r.xread("ergebnisse"):
         if i == job_id:
             yield i["message"]
 

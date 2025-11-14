@@ -237,3 +237,73 @@ LIMIT 20
         if session:
             await session.close()
         await driver.close()
+
+
+
+
+
+def create_athen_example_objects():
+    """Erstellt drei Beispiel-Events in Athen, Griechenland und lädt sie in Memgraph hoch"""
+    
+    # Beispiel 1: Akropolis Tour
+    event1 = event_node(
+        name="Akropolis Führung mit Skip-the-Line-Ticket",
+        rating_average=4.8,
+        rating_count=1247,
+        price_value=45.00,
+        price_currency="EUR",
+        price_unit="pro Person",
+        duration_min_hours=3.0,
+        url=["https://example.com/akropolis-tour"],
+        highlights=["Skip-the-Line-Eintritt", "Lizenzierter Guide", "Panoramablick auf Athen"],
+        full_description="Erkunden Sie das ikonische Wahrzeichen Athens mit einem erfahrenen Guide. Besichtigen Sie den Parthenon, das Erechtheion und den Tempel der Athena Nike während dieser 3-stündigen Tour.",
+        includes=["Eintrittsticket", "Fachkundiger Guide", "Kopfhörer für besseres Hören"],
+        meeting_point=[37.9715, 23.7267],  # Koordinaten nahe der Akropolis
+        non_suitable=["Rollstuhlfahrer", "Kinder unter 6 Jahren"]
+    )
+    
+    # Beispiel 2: Altstadt-Tour durch Plaka
+    event2 = event_node(
+        name="Private Tour durch das historische Plaka-Viertel",
+        rating_average=4.6,
+        rating_count=892,
+        price_value=65.00,
+        price_currency="EUR", 
+        price_unit="pro Person",
+        duration_min_hours=2.5,
+        url=["https://example.com/plaka-tour"],
+        highlights=["Versteckte Gassen entdecken", "Traditionelle Tavernen", "Lokale Handwerkskunst"],
+        full_description="Tauchen Sie ein in das charmante Plaka-Viertel mit seinen neoklassizistischen Häusern, byzantinischen Kirchen und malerischen Gassen. Erleben Sie das authentische Athen abseits der Touristenpfade.",
+        includes=["Privater Guide", "Kaffeepause in traditionellem Café", "Karte des Viertels"],
+        meeting_point=[37.9740, 23.7275],  # Plaka Zentrum
+        non_suitable=["rollstuhl"]
+    )
+    
+    # Beispiel 3: Griechischer Kochkurs
+    event3 = event_node(
+        name="Authentischer griechischer Kochkurs mit Marktbesuch",
+        rating_average=4.9,
+        rating_count=567,
+        price_value=85.00,
+        price_currency="EUR",
+        price_unit="pro Person", 
+        duration_min_hours=4.0,
+        url=["https://example.com/kochkurs-athen"],
+        highlights=["Frischer Marktbesuch", "Hausgemachtes Olivenöl", "Traditionelle Rezepte"],
+        full_description="Lernen Sie die Geheimnisse der griechischen Küche kennen! Beginnend mit einem Besuch auf dem lokalen Markt, wo Sie frische Zutaten auswählen, kochen Sie anschließend unter Anleitung eines einheimischen Kochs ein komplettes griechisches Menü.",
+        includes=["Alle Zutaten", "Kochausrüstung", "Rezeptbuch", "Vollständiges Menü mit Wein"],
+        meeting_point=[37.9785, 23.7321],  # Zentrale Lage in Athen
+        non_suitable=["Vegetarier", "Veganer"]
+    )
+    
+    return {
+        "status": "success",
+        "message": "3 Beispiel-Objekte aus Athen erfolgreich erstellt und hochgeladen",
+        "created_events": [
+            "Akropolis Führung mit Skip-the-Line-Ticket",
+            "Private Tour durch das historische Plaka-Viertel", 
+            "Authentischer griechischer Kochkurs mit Marktbesuch"
+        ]
+    }
+
+# Verwendung der Funktion
