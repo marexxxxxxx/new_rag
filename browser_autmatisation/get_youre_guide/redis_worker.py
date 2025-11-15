@@ -19,9 +19,9 @@ async def get_data(ctx, location):
     try:
         
         result = await find_locations_within_radius(location)
-        job_data = {"job_id": ctx['job_id'],
+        job_data = {"job_id": str(ctx['job_id']),
                     "message": result}
-        r.xadd(ctx['job_id'], job_data)
+        r.xadd(str(ctx['job_id']), json.dump(job_data))
             
     except Exception as e:
         error_msg = f"ARQ-Job {ctx['job_id']} Fehler: {e}"

@@ -64,7 +64,7 @@ async def test_job(
 async def get_results(job_id):
     
     for i in r.xread("ergebnisse"):
-        if i == job_id:
+        if i == str(job_id):
             yield i["message"]
 
 @app.get("/stream/{job_id}")
