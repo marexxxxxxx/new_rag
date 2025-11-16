@@ -131,7 +131,10 @@ from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 async def find_locations_within_radius(target_location_name: str):
     """
     Kombiniert Geocoding und eine Memgraph-Radius-Suche in einer Funktion.
+    Gibt einen JSON-string zurück für ARQ-Kompatibilität.
     """
+    import json
+    
     # 1. Geocoding (asynchron)
     def sync_geocode():
         try:
@@ -149,15 +152,15 @@ async def find_locations_within_radius(target_location_name: str):
 
     target_coords = await asyncio.to_thread(sync_geocode)
     if not target_coords:
-        print(f"Konnte Koordinaten für '{target_location_name}' nicht finden.", file=sys.stderr)
-        return []
+        error_result = {"status": "error", "message": "Location not found", "result": []}
+        return json.dumps(error_result)
 
     # 2. Memgraph-Verbindung
     llama_indexer_connect()
     driver = get_async_driver()
     if driver is None:
-        print("Fehler: Async Driver ist None.", file=sys.stderr)
-        return []
+        error_result = {"status": "error", "message": "Database connection failed", "result": []}
+        return json.dumps(error_result)
 
     # 3. Query für Frontend-kompatible Daten
     query = """
@@ -224,20 +227,37 @@ LIMIT 20
             activity_data = record.data()["activity"]
             # Stelle sicher, dass alle benötigten Felder vorhanden sind
             if activity_data["name"] and activity_data["name"] != "Vanaf € 30":
-                activities.append(activity_data)
+                # Konvertiere None zu null und stelle sicher, dass alle Werte JSON-kompatibel sind
+                cleaned_activity = {}
+                for key, value in activity_data.items():
+                    if value is None:
+                        cleaned_activity[key] = None
+                    elif isinstance(value, str) and value.lower() == "null":
+                        cleaned_activity[key] = None
+                    else:
+                        cleaned_activity[key] = value
+                activities.append(cleaned_activity)
         
         print(f"Memgraph: {len(activities)} Aktivitäten gefunden")
-        return activities
+        
+        # Rückgabe als JSON-String für ARQ-Kompatibilität
+        success_result = {
+            "status": "completed",
+            "location": target_location_name,
+            "result": activities,
+            "count": len(activities)
+        }
+        return json.dumps(success_result)
 
     except Exception as e:
         print(f"Memgraph Query-Fehler: {e}", file=sys.stderr)
-        return []
+        error_result = {"status": "error", "message": str(e), "result": []}
+        return json.dumps(error_result)
 
     finally:
         if session:
             await session.close()
         await driver.close()
-
 
 
 
