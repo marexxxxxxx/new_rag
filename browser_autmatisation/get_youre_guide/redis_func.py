@@ -7,7 +7,7 @@ from arq.connections import create_pool, ArqRedis
 from contextlib import asynccontextmanager
 from redis_worker import REDIS_SETTINGS 
 import json
-import redis
+import redis.asyncio as redis
 
 r = redis.Redis(
     host="localhost",
@@ -62,11 +62,75 @@ async def test_job(
     }
 
 async def get_results(job_id):
+    print(f"Starte Stream für Job: {job_id}")
+    last_id = "0"  # Starte vom Anfang des Streams
     
-    for i in r.xread("ergebnisse"):
-        if i == str(job_id):
-            yield i["message"]
+    try:
+        # Prüfe zuerst, ob die Nachricht bereits existiert
+        messages = await r.xread(streams={"ergebnisse": last_id}, count=100)
+        
+        # Durchsuche alle vorhandenen Nachrichten
+        for stream_name, stream_messages in messages:
+            for message_id, message_data in stream_messages:
+                # Konvertiere Bytes zu String
+                data = {}
+                for key, value in message_data.items():
+                    key_str = key.decode('utf-8') if isinstance(key, bytes) else key
+                    value_str = value.decode('utf-8') if isinstance(value, bytes) else value
+                    data[key_str] = value_str
+                
+                print(f"Prüfe Nachricht: {data}")
+                
+                # Wenn Nachricht zu unserer Job-ID gehört
+                if data.get('job_id') == job_id:
+                    print(f"Gefunden! Sende Nachricht für Job {job_id}")
+                    yield f"data: {json.dumps(data)}\n\n"
+                    return  # Beende nach Erfolg
+        
+        # Wenn nicht gefunden, warte auf neue Nachrichten
+        print(f"Warte auf Nachricht für Job {job_id}")
+        while True:
+            try:
+                # Blockierendes Lesen (wartet auf neue Nachrichten)
+                messages = await r.xread(
+                    streams={"ergebnisse": "$"}, 
+                    block=5000,  # 5 Sekunden Timeout
+                    count=1
+                )
+                
+                if messages:
+                    for stream_name, stream_messages in messages:
+                        for message_id, message_data in stream_messages:
+                            data = {}
+                            for key, value in message_data.items():
+                                key_str = key.decode('utf-8') if isinstance(key, bytes) else key
+                                value_str = value.decode('utf-8') if isinstance(value, bytes) else value
+                                data[key_str] = value_str
+                            
+                            print(f"Neue Nachricht erhalten: {data}")
+                            
+                            if data.get('job_id') == job_id:
+                                print(f"Gefunden! Sende Nachricht für Job {job_id}")
+                                yield f"data: {json.dumps(data)}\n\n"
+                                return
+                            else:
+                                print(f"Nachricht für andere Job-ID: {data.get('job_id')}")
+                                yield f"data: {json.dumps({'status': 'waiting', 'message': 'Noch nicht fertig'})}\n\n"
+                else:
+                    # Timeout - sende Keep-Alive
+                    yield f"data: {json.dumps({'status': 'waiting', 'message': 'Noch nicht fertig'})}\n\n"
+                    
+            except Exception as e:
+                print(f"Fehler beim Warten: {e}")
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                await asyncio.sleep(1)
+                
+    except Exception as e:
+        print(f"Initialer Fehler: {e}")
+        yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
+
+    
 @app.get("/stream/{job_id}")
 async def stream_results(
     request: Request,

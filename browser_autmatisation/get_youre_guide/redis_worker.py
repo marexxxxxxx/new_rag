@@ -3,7 +3,8 @@ import json
 from memgraph import find_locations_within_radius
 from get_youre_guide_automatisation import create_data_base
 from browser_auto import get_link_async
-import redis
+import redis.asyncio as redis
+
 
 r = redis.Redis(
     host='localhost',
@@ -15,17 +16,28 @@ r = redis.Redis(
 
 
 async def get_data(ctx, location):
-    print(f"ARQ-Job {ctx['job_id']}: Starte Memgraph-Suche für: {location}")
     try:
-        
         result = await find_locations_within_radius(location)
-        job_data = {"job_id": str(ctx['job_id']),
-                    "message": result}
-        r.xadd(str(ctx['job_id']), json.dump(job_data))
+        
+        # Sende Nachricht MIT Job-ID
+        message_data = {
+            "job_id": ctx['job_id'],
+            "location": location,
+            "result": result,  # oder was immer dein Ergebnis ist
+            "status": "completed"
+        }
+        
+        message_id = await r.xadd("ergebnisse", message_data)
             
     except Exception as e:
         error_msg = f"ARQ-Job {ctx['job_id']} Fehler: {e}"
         print(error_msg)
+        # Auch Fehler in den Stream schreiben
+        await r.xadd("ergebnisse", {
+            "job_id": ctx['job_id'], 
+            "error": error_msg,
+            "status": "error"
+        })
         return {"error": error_msg}
 
 async def create_data(ctx, location):
