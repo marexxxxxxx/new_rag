@@ -27,7 +27,7 @@ app = FastAPI(lifespan=lifespan)
 # CORS Middleware - muss VOR allen Routen definiert werden
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3001", "http://localhost:3002"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3001", "http://localhost:3002", "*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -45,21 +45,20 @@ async def get_informations(
     redis_pool: ArqRedis = Depends(get_redis_pool)
 ):
     job_id = str(uuid.uuid4())
-    await redis_pool.enqueue_job('create_data', location, _job_id=job_id, _queue="queue_create_data")
+    await redis_pool.enqueue_job('get_data', location, _job_id=job_id, _queue_name="queue_get_data")
     return {"message": "Job erfolgreich eingereiht", "location": location, "job_id": job_id}
 
-@app.get("/get_location/{location}")
-async def test_job(
+
+@app.get("/create_data/{location}")
+async def get_informations(
     location: str, 
     redis_pool: ArqRedis = Depends(get_redis_pool)
 ):
     job_id = str(uuid.uuid4())
-    print(f"Test: Starte Job {job_id} für {location}")
-    
-    job = await redis_pool.enqueue_job('get_data', location, _job_id=job_id, _queue_name="queue_get_data")
-    return {
-        "job_id": job_id,
-    }
+    await redis_pool.enqueue_job('create_data', location, _job_id=job_id, _queue_name="queue_create_data")
+    return {"message": "Job erfolgreich eingereiht", "location": location, "job_id": job_id}
+
+
 
 async def get_results(job_id):
     print(f"Starte Stream für Job: {job_id}")

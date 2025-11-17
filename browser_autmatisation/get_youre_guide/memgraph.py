@@ -18,6 +18,11 @@ def disconect():
     test("hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0")
 
 
+def check_values(obj):
+    pass
+
+
+
 # Connection details
 MEMGRAPH_CONFIG = {
     "url": "bolt://localhost:7687",
@@ -162,7 +167,7 @@ async def find_locations_within_radius(target_location_name: str):
         error_result = {"status": "error", "message": "Database connection failed", "result": []}
         return json.dumps(error_result)
 
-    # 3. Query für Frontend-kompatible Daten
+    # 3. Query für Frontend-kompatible Daten MIT meeting_point
     query = """
 MATCH (loc:event)
 WHERE loc.meeting_point IS NOT NULL
@@ -202,7 +207,8 @@ RETURN {
     image_url: CASE 
         WHEN loc.url IS NOT NULL AND size(loc.url) > 1 THEN loc.url[1]
         ELSE 'https://via.placeholder.com/350x200'
-    END
+    END,
+    meeting_point: loc.meeting_point  // HIER: meeting_point hinzugefügt
 } AS activity,
 loc_lat AS lat,
 loc_lon AS lon,
@@ -224,7 +230,9 @@ LIMIT 20
         result = await session.run(query, params)
 
         async for record in result:
-            activity_data = record.data()["activity"]
+            record_data = record.data()
+            activity_data = record_data["activity"]
+            
             # Stelle sicher, dass alle benötigten Felder vorhanden sind
             if activity_data["name"] and activity_data["name"] != "Vanaf € 30":
                 # Konvertiere None zu null und stelle sicher, dass alle Werte JSON-kompatibel sind
@@ -236,6 +244,14 @@ LIMIT 20
                         cleaned_activity[key] = None
                     else:
                         cleaned_activity[key] = value
+                
+                # Füge Koordinaten und Distanz hinzu
+                cleaned_activity["coordinates"] = {
+                    "lat": record_data["lat"],
+                    "lon": record_data["lon"]
+                }
+                cleaned_activity["distance_km"] = record_data["distance_km"]
+                
                 activities.append(cleaned_activity)
         
         print(f"Memgraph: {len(activities)} Aktivitäten gefunden")
@@ -244,20 +260,25 @@ LIMIT 20
         success_result = {
             "status": "completed",
             "location": target_location_name,
+            "target_coordinates": target_coords,  # Ziel-Koordinaten
             "result": activities,
             "count": len(activities)
         }
+        print(success_result)
         return json.dumps(success_result)
 
     except Exception as e:
-        print(f"Memgraph Query-Fehler: {e}", file=sys.stderr)
-        error_result = {"status": "error", "message": str(e), "result": []}
+        print(f"Memgraph-Fehler: {e}", file=sys.stderr)
+        error_result = {"status": "error", "message": f"Database query failed: {e}", "result": []}
         return json.dumps(error_result)
-
     finally:
         if session:
             await session.close()
         await driver.close()
+
+
+
+
 
 
 
