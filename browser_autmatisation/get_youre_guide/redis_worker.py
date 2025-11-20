@@ -4,9 +4,11 @@ from memgraph import find_locations_within_radius
 from get_youre_guide_automatisation import create_data_base
 from browser_auto import get_link_async
 import redis.asyncio as redis
+import os
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 
 r = redis.Redis(
-    host='localhost',
+    host=REDIS_HOST,
     port=6379
 )
 
@@ -69,7 +71,7 @@ async def create_data(ctx, location):
         })
 
 # KORREKTE WORKER-KONFIGURATION
-REDIS_SETTINGS = RedisSettings(host='localhost', port=6379)
+REDIS_SETTINGS = RedisSettings(host=REDIS_HOST, port=6379)
 
 
 class give_events:

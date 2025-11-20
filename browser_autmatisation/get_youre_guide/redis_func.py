@@ -8,13 +8,15 @@ from contextlib import asynccontextmanager
 from redis_worker import REDIS_SETTINGS 
 import json
 import redis.asyncio as redis
+import os
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 
 r = redis.Redis(
-    host="localhost",
+    host=REDIS_HOST,
     port=6379
 )
-app_state = {}
 
+app_state = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     pool = await create_pool(REDIS_SETTINGS)

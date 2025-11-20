@@ -11,6 +11,9 @@ import sys
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 from neo4j import AsyncGraphDatabase
+import os
+MEMGRAPH = os.getenv("MEMGRAPH", "localhost")
+
 connected = 0
 
 def disconect():
@@ -25,7 +28,7 @@ def check_values(obj):
 
 # Connection details
 MEMGRAPH_CONFIG = {
-    "url": "bolt://localhost:7687",
+    "url": f"bolt://{MEMGRAPH}:7687",
     "username": "",
     "password": ""
 }
@@ -133,6 +136,8 @@ import json
 import sys
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
+
+
 async def find_locations_within_radius(target_location_name: str):
     """
     Kombiniert Geocoding und eine Memgraph-Radius-Suche in einer Funktion.
@@ -275,13 +280,6 @@ LIMIT 20
         if session:
             await session.close()
         await driver.close()
-
-
-
-
-
-
-
 
 def create_athen_example_objects():
     """Erstellt drei Beispiel-Events in Athen, Griechenland und lädt sie in Memgraph hoch"""

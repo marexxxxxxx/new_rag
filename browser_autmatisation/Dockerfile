@@ -45,4 +45,3 @@ EXPOSE 8000
 # 2. Starte den Uvicorn-Server
 #    HINWEIS: Dies setzt voraus, dass Ihre Datei 'fastapi.py'
 #    eine Variable namens 'app' enthält (z.B. app = FastAPI())
-CMD ["uvicorn", "fastapi:app", "--host", "0.0.0.0", "--port", "8000"]
