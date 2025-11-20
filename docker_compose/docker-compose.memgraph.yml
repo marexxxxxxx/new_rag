@@ -21,15 +21,65 @@ services:
       - QUICK_CONNECT_MG_PORT=7687
     networks:
       - network1
-
   redis:
     image: redis:8.2.3
-    container_name: redis_datenbank
+    container_name: redis_datenbank # <--- Das ist der DNS-Name im Netzwerk!
     ports:
       - "6379:6379"
-    #command: redis-server --requirepass EinPasswort #Muss noch über env gesetzt werden.
     networks:
       - network1
+
+  fastapi:
+    image: new_rag
+    container_name: fastapi
+    ports:
+      - "8000:8000"
+    networks:
+      - network1
+    depends_on:
+      - memgraph
+      - redis
+    environment: 
+      - REDIS_HOST=redis_datenbank  # WICHTIG: Hostname statt localhost
+    command: fastapi dev redis_func.py --host 0.0.0.0
+    
+  arq_worker_get_events:
+    image: new_rag
+    container_name: arq_worker_get_events
+    networks:
+      - network1
+    depends_on:
+      - memgraph
+      - redis
+    environment: 
+      - MEMGRAPH=memgraph
+      - REDIS_HOST=redis_datenbank  
+    command: arq redis_worker.give_events
+
+  arq_worker_WorkerSettings:
+    image: new_rag
+    container_name: arq_worker_WorkerSettings
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - network1
+    depends_on:
+      - memgraph
+      - redis
+    environment: 
+      - MEMGRAPH=memgraph
+      - REDIS_HOST=redis_datenbank  
+    command: arq redis_worker.WorkerSettings
+
+  frontend:
+    image: schulprojekt_frontend_final
+    container_name: frontend
+    networks:
+      - network1
+    ports:
+      - "4000:3000"
+
+    
 networks:
   network1:
     name: allezusammen
