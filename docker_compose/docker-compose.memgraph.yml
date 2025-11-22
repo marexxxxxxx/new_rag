@@ -45,7 +45,7 @@ services:
     
   arq_worker_get_events:
     image: new_rag
-    container_name: arq_worker_get_events
+    container_name: arq_worker_give_events
     networks:
       - network1
     depends_on:
@@ -56,20 +56,32 @@ services:
       - REDIS_HOST=redis_datenbank  
     command: arq redis_worker.give_events
 
-  arq_worker_WorkerSettings:
+  arq-worker:
     image: new_rag
-    container_name: arq_worker_WorkerSettings
+    container_name: arq_worker_get_events
+    # Der Worker braucht Redis, um Jobs zu empfangen
+    depends_on:
+      - redis
+    # WICHTIG: Zugriff auf den Docker-Daemon des Hosts, um Browser-Container zu starten (Sibling-Container)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      # Optional: Mountet den aktuellen Ordner für Live-Code-Changes (nützlich bei Entwicklung mit --watch)
     networks:
       - network1
-    depends_on:
-      - memgraph
-      - redis
-    environment: 
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      # Damit das Python-Skript weiß, wie der Browser-Container heißen soll und in welches Netz er muss
+      - DOCKER_CONTAINER_NAME=kernel_browser_arq
+      - NETWORK_NAME=allezusammen
+      # Redis Konfiguration für ARQ (muss in deiner WorkerSettings Klasse genutzt werden)
+      - REDIS_HOST=redis_datenbank
+      - REDIS_PORT=6379
       - MEMGRAPH=memgraph
-      - REDIS_HOST=redis_datenbank  
-    command: arq redis_worker.WorkerSettings
+    # Start-Befehl für den Worker. 
+    # "dein_worker_modul.WorkerSettings" muss auf die Datei/Klasse zeigen, in der deine WorkerSettings definiert sind.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: arq redis_worker.WorkerSettings 
 
   frontend:
     image: schulprojekt_frontend_final
