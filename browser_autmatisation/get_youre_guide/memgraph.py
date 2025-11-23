@@ -13,7 +13,7 @@ from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 from neo4j import AsyncGraphDatabase
 import os
 MEMGRAPH = os.getenv("MEMGRAPH", "localhost")
-
+ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 connected = 0
 
 def disconect():
@@ -35,7 +35,7 @@ MEMGRAPH_CONFIG = {
 
 def llama_indexer_connect():        
     global graph_store, embedder
-    embedder = OllamaEmbeddings(model="hf.co/leliuga/all-MiniLM-L6-v2-GGUF:F16")
+    embedder = OllamaEmbeddings(model="hf.co/leliuga/all-MiniLM-L6-v2-GGUF:F16", base_url=ollama_url)
     Settings.embed_model =HuggingFaceEmbedding(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )

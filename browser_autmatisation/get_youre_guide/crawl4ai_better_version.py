@@ -34,9 +34,9 @@ llm = "ollama/hf.co/unsloth/Qwen3-14B-GGUF:Q6_K"
 
 
 
+import os
 
-
-
+ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
 
 
@@ -51,7 +51,7 @@ async def try_using_wohle_websitee(link,Name):
         word_count_threshold=1,
         extraction_strategy=LLMExtractionStrategy(
             extra_args=extra_args,
-            llm_config=LLMConfig(provider=llm),
+            llm_config=LLMConfig(provider=llm, base_url=ollama_url),
             chunk_token_threshold=1000,
             overlap_rate=0.1,
             apply_chunking=True,

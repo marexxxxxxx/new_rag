@@ -4,9 +4,14 @@ from state import state, isevent, ActivityListing, ActivityListing_advanced, inf
 from messages import is_event_prompt, json_format_prompt,is_inforamtion_good_prompt
 from scraper import splitting_events
 from crawl4ai_better_version import try_using_fitt_website, try_using_wohle_website
-is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000, )
-json_format_model = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, num_predict=1500)
-look_if_good = ChatOllama(model="hf.co/unsloth/Qwen3-14B-GGUF:Q6_K", temperature=0.1, num_predict=1500)
+import os
+ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+
+
+is_event_model = ChatOllama(model="hf.co/bartowski/ai21labs_AI21-Jamba-Reasoning-3B-GGUF:Q8_0", num_predict=1000,base_url=ollama_url )
+json_format_model = ChatOllama(model="hf.co/LiquidAI/LFM2-1.2B-Extract-GGUF:Q8_0", temperature=0, num_predict=1500, base_url=ollama_url)
+look_if_good = ChatOllama(model="hf.co/unsloth/Qwen3-14B-GGUF:Q6_K", temperature=0.1, num_predict=1500,base_url=ollama_url)
 
 
 def event_checker(state: state): #Findet herraus, was events sind, und was nicht.
@@ -98,7 +103,7 @@ def formater(state:state):
 async def get_informations_fast(state: state):
     if state["ergebnisse"] == []:
         print("sleep")
-        asyncio.sleep(60)
+        await asyncio.sleep(60)
         print("sleep2")
         return {}
     link = state["link"]

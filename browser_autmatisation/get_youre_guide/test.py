@@ -1,7 +1,10 @@
 import requests
 import json
+import os
+ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 def test(model):
-    url = "http://localhost:11434/api/generate"
+
+    url = f"{ollama_url}/api/generate"
 
     # Korrigierter Payload basierend auf Ihrer Anfrage:
     # - "model": Der Name des Modells, das Sie verwenden möchten.
