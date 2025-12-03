@@ -38,7 +38,7 @@ graph.add_node(NODE_CREATER, builder)
 
 graph.set_entry_point(GET_YOURE_DATA)
 graph.add_edge(GET_YOURE_DATA, FIST_FORMATER)
-graph.add_conditional_edges(FIST_FORMATER,get_data_check, {0: IS_EVENT, 1: GET_YOURE_DATA}) #vlt muss auch hier noch ne filterung hinein wenn ergebnisse zuende gehen 
+graph.add_conditional_edges(FIST_FORMATER,get_data_check, {0: IS_EVENT, 1: GET_YOURE_DATA}) 
 graph.add_conditional_edges(IS_EVENT, check, {0:JSON_FORMAT,1:IS_EVENT,2: GET_DEEP_LINK}) 
 graph.add_edge(JSON_FORMAT, IS_EVENT)
 graph.add_conditional_edges(GET_DEEP_LINK, check_if_link,{0: IS_EVENT, 1: GET_DEEP_LINK} )
